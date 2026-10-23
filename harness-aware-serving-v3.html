@@ -1,0 +1,666 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!-- layout: long-form memo, sticky section index on desktop, single column on phone -->
+<title>Harness-Aware Serving v3</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#f7f5f1; --surface:#ffffff; --border:#e4ded3;
+    --fg:#211d16; --fg-dim:#6b6457;
+    --accent:#b5651d; --accent-fg:#fff8ef;
+    --fact:#2f6b52; --reported:#3d5a8a; --claim:#b5651d; --hyp:#8a6d3b;
+    --display:'Source Serif 4', Georgia, serif;
+    --body:'IBM Plex Sans', system-ui, sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17140f; --surface:#1f1b14; --border:#332c21;
+      --fg:#efe9dd; --fg-dim:#a89f8e;
+      --accent:#e3974a; --accent-fg:#1a1208;
+      --fact:#6fc19e; --reported:#8fa6e0; --claim:#e3974a; --hyp:#d8b877;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17140f; --surface:#1f1b14; --border:#332c21;
+    --fg:#efe9dd; --fg-dim:#a89f8e;
+    --accent:#e3974a; --accent-fg:#1a1208;
+    --fact:#6fc19e; --reported:#8fa6e0; --claim:#e3974a; --hyp:#d8b877;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--fg); font-family:var(--body); line-height:1.6; padding-inline:16px}
+  h1,h2,h3{font-family:var(--display); text-wrap:balance; color:var(--fg)}
+  .wrap{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:230px minmax(0,760px); gap:48px; padding-block:48px 96px}
+  @media (max-width:860px){ .wrap{grid-template-columns:1fr} }
+
+  nav.toc{position:sticky; top:calc(24px + env(safe-area-inset-top,0px)); align-self:start; font-size:12.5px}
+  @media (max-width:860px){ nav.toc{position:static; order:2; border-top:1px solid var(--border); padding-top:20px; margin-top:12px} }
+  nav.toc .label{font-family:var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--fg-dim); font-size:10.5px; margin-bottom:10px}
+  nav.toc a{display:block; color:var(--fg-dim); text-decoration:none; padding:4.5px 0; border-left:2px solid transparent; padding-left:10px}
+  nav.toc a:hover{color:var(--fg); border-left-color:var(--accent)}
+
+  header.doc{margin-bottom:8px}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent)}
+  h1.title{font-size:clamp(28px,4vw,40px); margin:10px 0 6px; font-weight:700}
+  .thesis{font-size:18px; color:var(--fg-dim); font-style:italic; margin:0 0 18px; max-width:62ch}
+  .meta{display:flex; flex-wrap:wrap; gap:14px; font-family:var(--mono); font-size:12px; color:var(--fg-dim); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:12px 0; margin-bottom:36px}
+  .meta b{color:var(--fg); font-weight:500}
+
+  section{margin-bottom:52px; scroll-margin-top:24px}
+  h2{font-size:22px; display:flex; align-items:baseline; gap:10px; margin-bottom:4px}
+  h2 .n{font-family:var(--mono); color:var(--accent); font-size:14px}
+  .dek{color:var(--fg-dim); margin:0 0 20px; max-width:60ch}
+  p{margin:0 0 14px; max-width:68ch}
+  ul,ol{margin:0 0 14px; padding-left:22px}
+  li{margin-bottom:8px; max-width:62ch}
+
+  .analogy{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0}
+  @media (max-width:560px){ .analogy{grid-template-columns:1fr} }
+  .analogy .card{background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:18px}
+  .analogy .card h3{font-size:15px; margin:0 0 8px}
+  .analogy .card .stack{font-family:var(--mono); font-size:12px; color:var(--fg-dim); display:flex; flex-direction:column; gap:3px; margin-top:10px}
+  .analogy .card .stack span{padding:3px 8px; background:var(--bg); border:1px solid var(--border); border-radius:3px; width:fit-content}
+  .analogy .card.apple{border-color:var(--accent)}
+
+  table.cmp{width:100%; border-collapse:collapse; font-size:13.5px; margin:18px 0}
+  table.cmp th,table.cmp td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top}
+  table.cmp th{font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-dim); font-weight:500}
+  table.cmp td:first-child{font-weight:600; width:24%; color:var(--fg-dim); font-size:13px}
+  .tbl-wrap{overflow-x:auto}
+
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:18px 0}
+  .stat{background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:14px 16px}
+  .stat b{display:block; font-family:var(--mono); font-size:22px; color:var(--accent); font-variant-numeric:tabular-nums}
+  .stat span{font-size:12px; color:var(--fg-dim)}
+
+  .tag{display:inline-block; font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border-radius:3px; margin-left:6px; vertical-align:middle; white-space:nowrap}
+  .tag.fact{background:color-mix(in srgb, var(--fact) 20%, transparent); color:var(--fact)}
+  .tag.reported{background:color-mix(in srgb, var(--reported) 20%, transparent); color:var(--reported)}
+  .tag.claim{background:color-mix(in srgb, var(--claim) 20%, transparent); color:var(--claim)}
+  .tag.hyp{background:color-mix(in srgb, var(--hyp) 20%, transparent); color:var(--hyp)}
+
+  .track{display:flex; flex-direction:column; gap:0; margin:18px 0; border-left:2px solid var(--border); padding-left:20px}
+  .track .phase{position:relative; padding-bottom:26px}
+  .track .phase:last-child{padding-bottom:0}
+  .track .phase::before{content:""; position:absolute; left:-25px; top:4px; width:9px; height:9px; border-radius:50%; background:var(--accent); border:2px solid var(--bg)}
+  .track .phase h3{font-size:15px; margin:0 0 6px; font-family:var(--body); font-weight:600}
+  .track .phase .when{font-family:var(--mono); font-size:11px; color:var(--fg-dim); text-transform:uppercase; letter-spacing:.06em}
+
+  .decisions{display:flex; flex-direction:column; gap:10px; margin:18px 0}
+  .decision{display:grid; grid-template-columns:60px 1fr; gap:14px; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:14px 16px}
+  @media (max-width:560px){ .decision{grid-template-columns:1fr} }
+  .decision .id{font-family:var(--mono); color:var(--accent); font-weight:600}
+  .decision p{margin:0; font-size:14px; max-width:none}
+  .decision .target{display:block; font-family:var(--mono); font-size:11px; color:var(--fg-dim); margin-top:6px}
+
+  .risk{background:color-mix(in srgb, var(--hyp) 10%, var(--surface)); border:1px solid color-mix(in srgb, var(--hyp) 40%, var(--border)); border-radius:6px; padding:16px 18px; margin-bottom:14px}
+  .risk h3{font-size:15px; margin:0 0 8px; font-family:var(--body); font-weight:600}
+  .callout{background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:16px 18px; margin:18px 0}
+  .callout h3{font-size:14px; margin:0 0 8px; font-family:var(--body); font-weight:600}
+  .callout p{margin-bottom:0; font-size:14px}
+
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--fg-dim); border-top:1px solid var(--border); padding-top:18px; margin-top:8px}
+  footer{font-size:12px; color:var(--fg-dim); border-top:1px solid var(--border); padding-top:18px; margin-top:40px}
+  .v3-badge{font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent); padding:2px 8px; border-radius:3px; margin-left:8px}
+</style>
+
+<div class="wrap">
+  <nav class="toc">
+    <div class="label">Contents</div>
+    <a href="#problem">1. The problem</a>
+    <a href="#definition">2. Definition</a>
+    <a href="#architecture">3. System architecture &mdash; inference</a>
+    <a href="#example">4. Example</a>
+    <a href="#economics">5. Why it matters</a>
+    <a href="#finetuning">6. A second harness: fine-tuning <span class="v3-badge">new</span></a>
+    <a href="#rollouts">7. A third harness: RL rollouts</a>
+    <a href="#scope">8. What we build &mdash; and don't</a>
+    <a href="#byoc">9. BYOC deployment</a>
+    <a href="#roadmap">10. Roadmap</a>
+    <a href="#engineering">11. Engineering needs, by stream</a>
+    <a href="#risk">12. Open risks</a>
+    <a href="#decisions">13. Proposed decisions</a>
+  </nav>
+
+  <main>
+    <header class="doc">
+      <div class="eyebrow">Product definition &middot; draft v3 for review</div>
+      <h1 class="title">Harness-Aware Serving</h1>
+      <p class="thesis">Bring your agent and your model. Runara runs them on the cheapest hardware that works, without redoing work already done &mdash; whether that work is serving, fine-tuning, or generating rollouts.</p>
+      <div class="meta">
+        <span><b>Status</b> Draft v3 &mdash; for team review</span>
+        <span><b>Proposes</b> P43&ndash;P47</span>
+        <span><b>Changed since v2</b> New section 6 (fine-tuning architecture), expanded section 7 (rollout architecture), expanded engineering needs</span>
+      </div>
+    </header>
+
+    <section id="problem">
+      <h2><span class="n">01</span> The problem</h2>
+      <p class="dek">Runara runs the model. The customer brings the agent software around it, called the &ldquo;harness.&rdquo; That's a smaller market than selling everything. This document explains that limit, why it's still the right place to start, and leaves open whether we build a harness later.</p>
+
+      <p>Today the big AI labs sell everything as one package: the agent software, the model and the hardware. One vendor, one bill, already connected to the customer's data. We call this the bundle. Adam estimates about 95% of the money in this market goes to it (his estimate, not yet sourced). The open alternative looks like phones before one company owned the whole stack: agent software from one company, model from another, hardware from a third. Someone has to connect those pieces, and whoever does pays a cost the bundled vendors don't.</p>
+
+      <p>For now, we do one thing on purpose: we pick the hardware and run the model on it. The customer must already have a harness, so we can only sell to companies that have built one. Enterprises that want the full bundle have nowhere to plug us in. Reaching them would mean building connectors to Office, Google Workspace and similar tools, each one its own project. Whether and when we build a harness is still an open team decision (see section 12).</p>
+
+      <div class="analogy">
+        <div class="card apple">
+          <h3>The bundle (Apple)</h3>
+          <p style="font-size:13px; margin-bottom:0">One vendor, one bill, everything wired into your data. Most of today's revenue flows here (~95%, Adam's estimate).</p>
+          <div class="stack"><span>Harness</span><span>Model</span><span>Hardware</span></div>
+        </div>
+        <div class="card">
+          <h3>The open stack (Android)</h3>
+          <p style="font-size:13px; margin-bottom:0">Harness from one company, model from another, hardware from a third. Someone has to stitch the layers together.</p>
+          <div class="stack"><span>Harness &mdash; customer's</span><span>Model &mdash; Kimi, DeepSeek, Qwen&hellip;</span><span>Hardware &mdash; any chip, any cloud</span></div>
+        </div>
+      </div>
+      <p style="font-size:13px; color:var(--fg-dim)">One caution about this comparison: in phones, the company that won the open side ended up owning the piece that tied everything together. That's the case for building a harness later, and why the question is still open.</p>
+    </section>
+
+    <section id="definition">
+      <h2><span class="n">02</span> Definition</h2>
+      <p class="dek">The harness is the software wrapped around a model that turns it into an agent: its instructions, the tools it can use, the loop that calls those tools, how it manages memory, how it launches helper agents, and its connections to other systems. Claude Code, Cursor, Devin and OpenHands are harnesses. Runara doesn't build one. We run the traffic a harness sends.</p>
+
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th></th><th>Harness</th><th>Control plane (Runara)</th></tr></thead>
+          <tbody>
+            <tr><td>Decides</td><td>What to compute &mdash; prompts, tools, steps</td><td>Where and how to run it &mdash; which chip, which serving software, how the model is compressed and split, and where each request goes</td></tr>
+            <tr><td>Sees</td><td>Task meaning</td><td>Request logs, performance data, prices, and promised response times (SLAs)</td></tr>
+            <tr><td>Optimizes</td><td>Task success</td><td>Cost per token, at the speed the customer needs</td></tr>
+            <tr><td>Owner</td><td>Customer</td><td>Runara</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px; color:var(--fg-dim)">The two do different jobs. They connect through a standard API in the same format OpenAI uses, so switching to us is easy.</p>
+    </section>
+
+    <section id="architecture">
+      <h2><span class="n">03</span> System architecture &mdash; inference</h2>
+      <p class="dek">The harness talks to one address. Behind it, Runara makes two kinds of decision: which hardware runs the model, and how the traffic runs on it. That means sending each conversation back to the server that already remembers it, keeping that memory during pauses, and having spare servers ready before a burst arrives.</p>
+
+      <pre class="mermaid">
+flowchart LR
+    subgraph H["Harness (customer's)"]
+        A["Agent loop\nprompt, tools, context,\nsub-agents"]
+    end
+    subgraph CP["Runara control plane"]
+        API["OpenAI-compatible API"]
+        HW["Hardware & setup choice\ncheapest chip that meets\nthe SLA, from measured results"]
+        RT["Session-aware router\nsame session -> same replica"]
+        SCH["Cache & placement scheduler\nhold or move KV during gaps"]
+        AS["Burst-aware autoscaler\nready before sub-agents fan out"]
+    end
+    subgraph PA["Pool on chip A (older/cheaper GPU)"]
+        E1["Replica 1\nKV cache: hot"]
+        E2["Replica 2\nKV cache: hot"]
+    end
+    subgraph PB["Pool on chip B (newest GPU, fast steps)"]
+        E3["Replica 3\nKV cache: hot"]
+        SB["Standby\nwarm, for bursts"]
+    end
+    OF[("KV offload tiers\nCPU memory / SSD / shared storage")]
+    A -- "same URL,\nevery turn" --> API
+    API --> HW --> RT
+    RT --> E1
+    RT -.-> E3
+    SCH <--> E1
+    SCH <--> E3
+    SCH <--> OF
+    AS -.-> SB
+    E1 -- telemetry --> SCH
+    E3 -- telemetry --> SCH
+      </pre>
+
+      <p>The harness doesn't see any of this. It sends every turn to the same address it always has. Behind that address, Runara does four things:</p>
+      <ul>
+        <li><b>Hardware is chosen, not assumed.</b> We don't default to the newest, most expensive GPU. We test which chip is the cheapest one that's still fast enough for the customer, at their prices. Often that's an older one. Everything below then gets more out of that hardware.</li>
+        <li><b>The router sends each conversation back to the same server.</b> An agent conversation has many turns, and each server remembers the conversations it has already worked on. So we read a conversation ID from each request and keep sending that conversation to the same server, instead of to whichever server is least busy. A new conversation goes wherever there's room.</li>
+        <li><b>The scheduler keeps conversation memory alive.</b> The scheduler is the part that decides what goes where. While the agent pauses to run a tool, an ordinary server throws away its memory of the conversation (the &ldquo;KV cache&rdquo;) to free up space. We keep it: in place for a short pause, or moved to cheaper storage (CPU memory, SSD or shared storage) for a longer one. When the agent comes back, nothing has to be redone.</li>
+        <li><b>The autoscaler plans for bursts.</b> When an agent launches several helper agents at once, many requests arrive together, unlike the usual random trickle of traffic. We recognize that pattern and have spare servers ready beforehand, so the helpers don't wait in line.</li>
+      </ul>
+
+      <div class="callout">
+        <h3>What we build vs. what we use</h3>
+        <p>Free open-source tools already do much of the basic work: NVIDIA Dynamo, llm-d, SGLang's router and LMCache can route by conversation memory and move that memory to cheaper storage. We build on them instead of rebuilding them, and we don't build our own storage. Our part is the decisions they don't make: which hardware to use, where each conversation and its memory should live, and what that costs, measured on the customer's own traffic.</p>
+      </div>
+    </section>
+
+    <section id="example">
+      <h2><span class="n">04</span> Example</h2>
+      <p class="dek">One coding-agent conversation, turn by turn, run by Runara. Below it, the same conversation on an ordinary setup for comparison.</p>
+
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Step</th><th>Harness does</th><th>Runara does</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td style="width:auto">1. Cold start</td><td>Sends its instructions, tool descriptions and the first message (~8K tokens)</td><td>Router picks a free server; the model reads the whole input from scratch</td><td>Nothing remembered yet, so all 8K input tokens cost full price</td></tr>
+            <tr><td style="width:auto">2. Tool call</td><td>Calls a file-read tool, waits ~6s for the result</td><td>Scheduler keeps this conversation's memory on the server during the pause instead of throwing it away</td><td>Nothing to redo when the agent comes back</td></tr>
+            <tr><td style="width:auto">3. Turn 2</td><td>Resends the full history (~8.2K tokens) + tool result + next message</td><td>Router sends it to the <i>same</i> server; only the ~400 new tokens need reading</td><td>~95% of this turn's input is already remembered</td></tr>
+            <tr><td style="width:auto">4. Turns 3&ndash;43</td><td>Same pattern repeats as history keeps growing</td><td>Same server, growing memory; the share already remembered climbs toward the ~96% median</td><td>Cost per turn stays about flat, instead of growing with the length of the conversation</td></tr>
+            <tr><td style="width:auto">5. Sub-agent burst</td><td>Launches 4 helper agents at once for a multi-file task</td><td>Autoscaler already has spare servers ready, so the 4 new conversations don't wait behind the main one</td><td>The helpers respond about as fast as a single conversation would</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="risk" style="margin-top:16px">
+        <h3>Without harness-aware serving</h3>
+        <p style="margin-bottom:0; font-size:14px">An ordinary load balancer sends turn 2 to whichever server is least busy, which usually isn't the one that remembers this conversation. So all ~8.2K tokens get read again, every turn, for the whole conversation. The helper-agent burst waits in line behind everything else, because nothing planned for it.</p>
+      </div>
+      <p style="font-size:13px; color:var(--fg-dim)">This example keeps the hardware the same to show the serving effect alone. In practice the two add up: the right chip makes every token cheaper, and smarter serving means fewer tokens need processing at all.</p>
+    </section>
+
+    <section id="economics">
+      <h2><span class="n">05</span> Why it matters</h2>
+      <p class="dek">The harness shapes the traffic, and the traffic decides the cost. We don't need to build a harness to benefit from understanding one. We need to run harness traffic better than anyone, on the right hardware.</p>
+
+      <h3 style="font-size:16px">Almost all the input has been seen before</h3>
+      <p>Every turn, a harness sends the whole conversation again: instructions, tools, history, then the new message. Most of it can be remembered from the last turn instead of processed again.</p>
+      <div class="stats">
+        <div class="stat"><b>43</b><span>median turns per agent session <span class="tag fact">fact</span></span></div>
+        <div class="stat"><b>142K</b><span>median input tokens per session <span class="tag fact">fact</span></span></div>
+        <div class="stat"><b>&gt;96%</b><span>of input already remembered (cache hit rate) <span class="tag fact">fact</span></span></div>
+        <div class="stat"><b>30&times;</b><span>price gap, new vs. remembered input (DeepSeek: $0.044 vs $1.32/M) <span class="tag fact">fact</span></span></div>
+      </div>
+      <p style="font-size:12.5px; color:var(--fg-dim)">Source: SemiAnalysis AgentX, which replays 393 real Claude Code sessions; DeepSeek's published list prices.</p>
+      <p>If 96% of input is already remembered, input costs about $0.095 per million tokens. At 80%, it's about $0.30, roughly 3&times; more (simple math on the list prices above). Every point of cache hit rate is money, and keeping it high takes serving that understands the harness.</p>
+      <p>Inference wastes money in three ways: the wrong chip, the wrong settings, and doing the same work twice. Smarter serving fixes the third. Choosing the hardware fixes the first.</p>
+
+      <h3 style="font-size:16px">Software alone moves revenue 1.8&ndash;2.7&times; on identical hardware</h3>
+      <p>On SemiAnalysis's published agent benchmark (Sep 2026), changing only the serving software raised revenue per gigawatt 1.8&times; on GB300 and 2.7&times; on B200 <span class="tag fact">fact</span>. Much of that difference comes from how well the software handles agent traffic: remembering, moving memory to cheaper storage, and scheduling. How much of it our stack captures is still a <span class="tag claim">claim</span> &mdash; P45 below is the test.</p>
+
+      <h3 style="font-size:16px">Getting answers right matters as much as speed</h3>
+      <p>Open models expect specific message and tool-call formats. Get the format, the tool-call reading or the handling of reasoning text wrong, and the agent quietly breaks. Different providers running the exact same model have shown measurably different tool-call accuracy; Moonshot publishes a checking tool for Kimi for this reason. Compressing a model (quantization) also causes small errors that pile up over a long agent run, which single-question benchmarks miss. So quality has to be tested on real agent runs, not standard tests like MMLU.</p>
+
+      <h3 style="font-size:16px">Every conversation improves the next hardware choice</h3>
+      <p>Each conversation we run shows how a harness's traffic behaves on a given chip and setup. With the customer's permission, we add those measurements to our performance map, so the next recommendation is better. AI agents can write serving software, but they can't produce measurements from chips they don't run on. That data is the advantage that grows over time.</p>
+
+      <h3 style="font-size:16px">Not building a harness keeps us neutral</h3>
+      <p>Companies with their own harness (Cognition, Cursor, Character.AI, internal platform teams) are unlikely to buy from a vendor that competes with them <span class="tag hyp">hypothesis</span>. The big AI labs compete with them; we don't, today. Because our API uses the standard OpenAI format, any harness can switch to us by changing one address. Enterprises that keep their harness and data in-house (finance, cyber, healthcare) can run Runara inside their own cloud and keep control on their side.</p>
+      <p style="font-size:13px; color:var(--fg-dim)">Two caveats. Several of these companies already buy inference from Together AI, so we'd be replacing someone, not filling a gap. And if we build a harness later, we give up this neutrality.</p>
+    </section>
+
+    <section id="finetuning">
+      <h2><span class="n">06</span> A second harness: fine-tuning <span class="v3-badge">new in v3</span></h2>
+      <p class="dek">A training loop is also a harness: a loop around the model that decides what to compute next. In fine-tuning, the loop runs data forward through the model (forward pass), works backward to find what to adjust (backward pass), updates the model (optimizer step), and repeats for every batch. Runara's method works the same way here: measure the job, then pick the cheapest hardware and settings that fit it.</p>
+
+      <h3 style="font-size:16px">The open-source tools</h3>
+      <p>LlamaFactory is well known, but fine-tuning tools change fast and none stays the default for long. Here's the current field as we understand it:</p>
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Framework</th><th>What it is</th></tr></thead>
+          <tbody>
+            <tr><td>LlamaFactory</td><td>Config-driven fine-tuning UI/CLI covering LoRA, QLoRA, full fine-tune and RLHF-style methods across many model families <span class="tag reported">reported</span></td></tr>
+            <tr><td>Axolotl</td><td>YAML-configured fine-tuning on top of HuggingFace + DeepSpeed/FSDP, popular for community LoRA and full fine-tunes <span class="tag reported">reported</span></td></tr>
+            <tr><td>torchtune</td><td>PyTorch-native fine-tuning library, no config-framework layer; recipes are editable Python, closest to the underlying training loop <span class="tag reported">reported</span></td></tr>
+            <tr><td>Unsloth</td><td>Hand-optimized kernels for LoRA/QLoRA; reports significantly lower memory and faster training on single-GPU setups <span class="tag reported">reported</span></td></tr>
+            <tr><td>HuggingFace TRL + PEFT + Accelerate</td><td>The library-level building blocks (adapters, trainer loops, distributed launch) most of the above are built on or compatible with <span class="tag reported">reported</span></td></tr>
+            <tr><td>NVIDIA NeMo / Megatron-LM</td><td>Production-grade large-scale training with tensor/pipeline/sequence parallelism, aimed at frontier-scale full pretraining and fine-tuning <span class="tag reported">reported</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>We don't need to pick one. Like the serving software in section 03, these tools run the loop itself. Runara's part is measuring what they do on real hardware and choosing the setup underneath them, not replacing them.</p>
+
+      <h3 style="font-size:16px; margin-top:28px">Measuring fine-tuning the way we measure inference</h3>
+      <p>For inference, we measure how each model performs on each chip. For fine-tuning, we measure each training step for a given model size, a given way of splitting the work across GPUs, and a given number precision. The forward pass, backward pass and optimizer step are each measured separately for time and peak memory.</p>
+
+      <pre class="mermaid">
+flowchart LR
+    subgraph C["Customer's trainer"]
+        D["Dataset / batches"]
+        T["Training loop\nAxolotl / torchtune /\nDeepSpeed / Megatron"]
+    end
+    subgraph R["Runara fine-tuning profiler"]
+        FWD["Forward pass\ntime + activation memory"]
+        BWD["Backward pass\ntime + gradient memory"]
+        OPT["Optimizer step\ntime + optimizer-state memory"]
+        COMM["Distributed comm\nall-reduce / all-gather time"]
+        PICK["Hardware & parallelism chooser\nGPU tier, ZeRO/FSDP stage,\ntensor/pipeline degree,\nprecision, LoRA vs QLoRA vs full"]
+    end
+    CL["Training cluster\ncheapest config that\nfits memory + meets\nthroughput target"]
+    D --> T --> FWD --> BWD --> OPT
+    FWD -.-> COMM
+    BWD -.-> COMM
+    OPT -.-> COMM
+    FWD --> PICK
+    BWD --> PICK
+    OPT --> PICK
+    COMM --> PICK
+    PICK --> CL
+      </pre>
+
+      <p>For each model and dataset, the profiler records how much memory and time each part uses:</p>
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Component</th><th>What it holds</th><th>What shrinks it</th></tr></thead>
+          <tbody>
+            <tr><td>Model weights</td><td>The model's parameters, at full or reduced precision</td><td>Storing the frozen model in 4-bit (QLoRA); splitting the weights across GPUs (FSDP / ZeRO-3)</td></tr>
+            <tr><td>Gradients</td><td>One value per <i>trainable</i> parameter, saying how to adjust it; computed in the backward pass</td><td>LoRA/QLoRA freeze the main model and train only small add-on pieces (adapters), so gradients are needed only for those</td></tr>
+            <tr><td>Optimizer state</td><td>The Adam optimizer stores two extra numbers per trainable parameter <span class="tag fact">fact</span>, usually at higher precision than the weights</td><td>Same LoRA/QLoRA savings as gradients; ZeRO-1 splits this across GPUs; paged optimizers move sudden spikes to CPU memory (QLoRA)</td></tr>
+            <tr><td>Activations</td><td>In-between results saved from the forward pass for the backward pass to use; grows with batch size &times; input length &times; number of layers</td><td>Recomputing them instead of storing them (gradient checkpointing), trading time for memory; smaller batches added up over several steps (gradient accumulation); splitting long inputs across GPUs</td></tr>
+            <tr><td>Communication</td><td>Not memory but time: GPUs exchanging data with each other on every step</td><td>Matching how the work is split to how fast the GPUs are connected; exchanging data while computing instead of after</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size:16px; margin-top:28px">The options Runara chooses between</h3>
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Strategy</th><th>Shards</th><th>Runara picks it when</th></tr></thead>
+          <tbody>
+            <tr><td>Data parallel (DDP)</td><td>Nothing. Each GPU has a full copy of the model and gets part of each batch</td><td>The model fits easily on one GPU</td></tr>
+            <tr><td>ZeRO-1 / ZeRO-2</td><td>Optimizer state, then also gradients, across GPUs</td><td>The model fits on one GPU, but optimizer state leaves too little room for a useful batch size</td></tr>
+            <tr><td>ZeRO-3 / FSDP</td><td>The model weights too, so no single GPU holds the whole model</td><td>The model doesn't fit on one GPU at all</td></tr>
+            <tr><td>Tensor parallel</td><td>Single weight matrices, split within a layer</td><td>Added to FSDP/ZeRO-3 when one layer's memory is still too large, or when the GPU connections favor it</td></tr>
+            <tr><td>Pipeline parallel</td><td>Groups of layers, each on a different GPU, run in sequence</td><td>Very deep models, or when tensor parallel would overload the GPU connections</td></tr>
+            <tr><td>Sequence / context parallel</td><td>Long inputs, split across GPUs</td><td>Fine-tuning on long inputs, where their memory is the biggest cost</td></tr>
+            <tr><td>LoRA</td><td>Nothing. It freezes the main model and trains small add-on matrices (adapters)</td><td>The default starting point. It cuts gradient and optimizer memory to a small fraction of a full fine-tune, with some quality cost we still need to measure</td></tr>
+            <tr><td>QLoRA</td><td>LoRA, plus the frozen model stored in 4-bit (NF4), with extra compression and paged optimizers</td><td>The model doesn't fit even with LoRA on the target GPU</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h3>Why this is about choosing hardware, not just a training recipe</h3>
+        <p>A full fine-tune, a LoRA fine-tune and a QLoRA fine-tune of the same model aren't three settings of one job. They need very different amounts of memory, so each fits a different cheapest GPU. The profiler measures what a job actually needs, instead of using whatever GPUs the customer already has reserved. It's the training version of section 03's &ldquo;hardware is chosen, not assumed.&rdquo;</p>
+      </div>
+
+      <h3 style="font-size:16px; margin-top:28px">Where this sits</h3>
+      <p>Fine-tuning can be built sooner than RL rollouts (section 07). The measuring tools are a small extension of what section 03 already needs, and the open frameworks above already define the loop to measure. It still needs its own pilot; P47 below proposes one.</p>
+    </section>
+
+    <section id="rollouts">
+      <h2><span class="n">07</span> A third harness: RL rollouts</h2>
+      <p class="dek">A coding agent isn't the only loop wrapped around a model. Reinforcement learning (RL) training is one too, and serving companies already sell rollout generation as a product. It's the natural next market after inference, not something we build in Year 1.</p>
+
+      <p>RL training works like an agent harness: a loop around the model that decides what to do next based on what came back. Instead of instructions and tool calls, it uses a batch of prompts, a rule for sampling answers, a reward model that scores them, and a model update, repeated thousands of times. The part that runs on a GPU is <b>rollout generation</b>: producing many possible answers per prompt, at scale, so they can be scored. That's inference traffic, but it looks nothing like a chat conversation.</p>
+
+      <div class="stats">
+        <div class="stat"><b>&gt;70%</b><span>of RL training time is spent generating rollouts, not training <span class="tag reported">reported</span></span></div>
+      </div>
+      <p style="font-size:13px; color:var(--fg-dim)">This is Together AI's own figure for its RL product. If most of an RL run is spent generating rollouts, making RL fast is mostly a serving problem, not a training problem.</p>
+
+      <h3 style="font-size:16px; margin-top:24px">How rollout generation connects to the training step</h3>
+      <p>Rollout generation uses section 03's serving setup almost unchanged; it's the same kind of work with a different traffic pattern. The training step reuses section 06's profiler. The two meet when updated model weights are sent to the rollout servers (the &ldquo;weight sync&rdquo;).</p>
+
+      <pre class="mermaid">
+flowchart LR
+    subgraph T["Customer's RL trainer"]
+        POL["Policy model\ncurrent weights"]
+        REW["Reward model\nscores completions"]
+        STEP["Training step\nforward / backward / optimizer\n(section 06 profiler)"]
+    end
+    subgraph RO["Runara rollout serving"]
+        GEN["Rollout generation\nfan-out sampling, many\ncompletions per prompt\n(section 03 engine)"]
+    end
+    SCORE["Scoring"]
+    SYNC["Weight sync\nseconds (same datacenter) to\nunder a minute (global)"]
+    POL --> SYNC --> GEN
+    GEN --> SCORE --> REW --> STEP --> POL
+      </pre>
+
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Company</th><th>Fine-tuning</th><th>Who writes the training loop</th><th>Rollout serving</th></tr></thead>
+          <tbody>
+            <tr><td>Fireworks AI</td><td>LoRA, full, DPO, managed RFT <span class="tag reported">reported</span></td><td>Fireworks (managed), or the customer (Training API)</td><td>Explicit &ldquo;bring your own trainer&rdquo;: Fireworks serves only rollout generation on its production inference stack <span class="tag reported">reported</span></td></tr>
+            <tr><td>Together AI</td><td>LoRA + full SFT, RL in closed beta <span class="tag reported">reported</span></td><td>Customer controls rollout config & weight-push frequency; Together handles sync</td><td>Same production inference stack serves rollouts; weight sync in seconds (same datacenter) to under a minute (global) <span class="tag reported">reported</span></td></tr>
+            <tr><td>Tinker (Thinking Machines)</td><td>LoRA only, via a low-level training API <span class="tag reported">reported</span></td><td>The customer, entirely &mdash; <code>forward_backward</code>/<code>sample</code> primitives, reference loops in the open-source Tinker Cookbook</td><td>Not publicly detailed</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Two of the three split the work the same way Runara does for agents: the training loop (trainer, evaluator, reward model) stays with the customer or a managed layer, and rollout generation, the actual inference, runs on a production serving system underneath. Fireworks' &ldquo;bring your own trainer&rdquo; is essentially the same offer as &ldquo;bring your agent and your model.&rdquo;</p>
+
+      <p>This fits a wider trend. Serving companies like Fireworks and Together are moving into training, and training platforms like Thinking Machines are reportedly moving into serving (unverified). Everyone is heading toward production inference, because that's the spending that comes back every day.</p>
+
+      <p>Rollout traffic is a different problem from both agent serving and fine-tuning:</p>
+      <ul>
+        <li><b>Volume matters more than speed.</b> A training run cares about total rollouts per second, not how fast any single one finishes. The goal changes from &ldquo;fast enough to feel instant&rdquo; to &ldquo;as many samples per GPU-hour as possible,&rdquo; which makes cheaper hardware even more attractive.</li>
+        <li><b>Many answers at once, not ongoing conversations.</b> Many separate answers are generated from the same prompt at once, then thrown away after scoring. There's no conversation to send back to the same server. Sizing memory matters again here, but for generating rather than training.</li>
+        <li><b>The model keeps changing.</b> The model being served changes after every training step. Serving has to load the new weights regularly (every few seconds to a minute, per Together's numbers) without stopping the rollouts already running.</li>
+      </ul>
+
+      <div class="callout">
+        <h3>Where this sits</h3>
+        <p>Year 1 focuses on inference and fine-tuning. Rollout serving goes into the investor story as the next market. One test we can run now: ask a training platform whether they'd build rollout serving themselves or pay for it.</p>
+      </div>
+    </section>
+
+    <section id="scope">
+      <h2><span class="n">08</span> What we build &mdash; and don't</h2>
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>In scope</th><th>Out of scope (for now)</th></tr></thead>
+          <tbody>
+            <tr><td style="width:auto; color:var(--fg)">Choosing the hardware: the cheapest chip and setup that meets the promised speed, at the customer's prices</td><td style="color:var(--fg)">Prompts, tools and agent logic. Not today; building a harness is an open decision</td></tr>
+            <tr><td style="width:auto; color:var(--fg)">A standard OpenAI-style API: customers switch by changing one address</td><td style="color:var(--fg)">Our own memory or storage system. We use Dynamo, LMCache and storage vendors' products</td></tr>
+            <tr><td style="width:auto; color:var(--fg)">Sending each conversation to the server that already remembers it</td><td style="color:var(--fg)">Connectors to Office, Google Workspace and internal systems. Two views, below</td></tr>
+            <tr><td style="width:auto; color:var(--fg)">Keeping conversation memory alive while tools run</td><td style="color:var(--fg)">RL rollout serving. The next market, not Year 1</td></tr>
+            <tr><td style="width:auto; color:var(--fg)">Handling bursts when an agent launches helper agents</td><td style="color:var(--fg)">Our own training framework. We measure and choose hardware underneath Axolotl, torchtune, DeepSpeed and Megatron, rather than replacing them</td></tr>
+            <tr><td style="width:auto; color:var(--fg)">Fine-tuning measurement: time and memory per training step, and choosing how to split the work and at what precision <span class="v3-badge">new</span></td><td style="color:var(--fg)"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px; color:var(--fg-dim)"><b>Connectors: two views, to decide together.</b> Adam: build them only as paid custom work for the next 3&ndash;6 months; built in advance, they become costly one-off engineering that no one pays for (an &ldquo;NRE trap&rdquo;). Alon: a few developers' worth of work later, with no GPU expertise needed.</p>
+    </section>
+
+    <section id="byoc">
+      <h2><span class="n">09</span> BYOC deployment</h2>
+      <p class="dek">Everything above assumes Runara runs a group of servers with a router in front. Bring-your-own-cloud (BYOC), where we run inside the customer's own cloud account, changes who owns those servers, not whether the techniques work. There's one real exception.</p>
+
+      <p>Sending conversations back to the same server and keeping their memory during pauses only involve one customer's own traffic. They work just as well, or better, inside the customer's cloud, since no other customers compete for the same servers. Enterprises that keep their harness and data in-house (finance, cyber, healthcare) get the same benefits without their data leaving their own systems. That's the reason to offer BYOC.</p>
+
+      <p>Handling bursts is the exception. On Runara's shared servers, one customer's burst is evened out by everyone else's traffic, so keeping spare capacity is cheap. Under BYOC, spare capacity covers only that one customer. Handling a burst then means either the customer pays for idle servers (which weakens our cost pitch), or Runara starts new servers in the customer's account when needed. Starting a server and loading the model usually takes minutes, but a helper-agent burst needs capacity in seconds.</p>
+
+      <p>We need an answer before promising this under BYOC. Either we keep spare servers ready for each customer, possibly on cheaper or older GPUs since much helper-agent work is routine <span class="tag hyp">hypothesis</span>, or we clearly tell customers that bursts respond more slowly under BYOC than on shared servers.</p>
+    </section>
+
+    <section id="roadmap">
+      <h2><span class="n">10</span> Roadmap</h2>
+      <div class="track">
+        <div class="phase">
+          <div class="when">Phase 1</div>
+          <h3>Harness-aware serving on the right hardware</h3>
+          <p style="font-size:14px">Pick the cheapest hardware that meets the promised speed, then run agent traffic smartly on it: sending conversations to the right server, keeping their memory, and handling bursts. Built on open-source tools. A standard OpenAI-style API, so switching to us means changing an address, not a big integration project.</p>
+        </div>
+        <div class="phase">
+          <div class="when">Phase 1 (fast-follow)</div>
+          <h3>Fine-tuning-aware hardware choice <span class="v3-badge">new</span></h3>
+          <p style="font-size:14px">The fine-tuning profiler and hardware chooser from section 06, built on the same measuring tools as inference. Less work than rollout serving, since the training frameworks already exist; Runara adds the measuring and choosing underneath them.</p>
+        </div>
+        <div class="phase">
+          <div class="when">Phase 2</div>
+          <h3>Per-step model & hardware routing <span class="tag hyp">hypothesis</span></h3>
+          <p style="font-size:14px">If the harness tells us what kind of step each request is (planning, a tool call, summarizing), we send each step to a different model and hardware: a large model on fast hardware for planning, a small model on cheap hardware for routine helper work. Same idea, one level up.</p>
+        </div>
+        <div class="phase">
+          <div class="when">Open decision</div>
+          <h3>Connectors and the harness itself</h3>
+          <p style="font-size:14px">Whether and when we build a harness is open. Oz: yes, step by step, starting with per-step routing. Adam: our current product is how we get in the door. The two views on connectors are in section 08. Not a priority for the current fundraise.</p>
+        </div>
+        <div class="phase">
+          <div class="when">Next market</div>
+          <h3>RL rollout serving</h3>
+          <p style="font-size:14px">The same idea applied to training traffic: volume over speed, many answers per prompt, and a model that keeps changing. Part of the investor story now; built after inference and fine-tuning are proven.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="engineering">
+      <h2><span class="n">11</span> Engineering needs, by stream <span class="tag hyp">hypothesis</span></h2>
+      <p class="dek">A staffing estimate for all three product lines in this document (agent serving in sections 03&ndash;05, fine-tuning in section 06, RL rollouts in section 07), plus the shared roles all three need to run at scale and be sold. Sized generously, because it's cheaper to know the real headcount now than to find out mid-build. For the team to discuss, not a commitment.</p>
+
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th></th><th>Harness-aware serving</th><th>Fine-tuning <span class="v3-badge">new</span></th><th>RL rollouts</th></tr></thead>
+          <tbody>
+            <tr><td>Headcount</td><td style="color:var(--fg)">~6 engineers</td><td style="color:var(--fg)">~5 engineers</td><td style="color:var(--fg)">~5 engineers</td></tr>
+            <tr><td>Core build</td><td style="color:var(--fg)">2 distributed-systems engineers &mdash; the router, cache/placement scheduler, and autoscaler themselves; 1 systems engineer on hardware & setup choice &mdash; the chip/engine selection logic from section 03</td><td style="color:var(--fg)">1 MLE for fine-tuning &mdash; owns LoRA/QLoRA recipes and integration with Axolotl/torchtune/DeepSpeed; 1 research/applied engineer &mdash; validates the profiler's picks against real convergence, not just memory fit</td><td style="color:var(--fg)">2 ML infra engineers with large-scale batch inference experience &mdash; the high-throughput rollout-serving path; 1 engineer on fan-out sampling performance &mdash; KV-cache sizing and throughput at high sample counts per prompt</td></tr>
+            <tr><td>Profiling / engine-level</td><td style="color:var(--fg)">1 ML systems engineer fluent in vLLM/SGLang internals &mdash; KV offload and prefix-cache integration points</td><td style="color:var(--fg)">1 ML systems engineer &mdash; instruments forward/backward/optimizer profiling and picks parallelism & precision</td><td style="color:var(--fg)">1 engineer with RL training-loop background &mdash; gets weight-sync semantics and the trainer/rollout handoff right</td></tr>
+            <tr><td>Operate</td><td style="color:var(--fg)">2: 1 SRE/platform engineer &mdash; reliability and observability for the control plane itself; 1 customer-facing integration engineer &mdash; onboarding harnesses onto the OpenAI-compatible API, the first line for &ldquo;why doesn't my tool-call format work&rdquo; issues</td><td style="color:var(--fg)">2: 1 ML infra engineer &mdash; distributed training cluster operations: checkpointing, fault tolerance, job scheduling; 1 data/eval engineer &mdash; fine-tuning dataset pipelines and measuring quality, not just cost, per section 06's convergence caveat</td><td style="color:var(--fg)">1 data/eval engineer &mdash; reward-model and rollout-quality checks, shared in spirit with fine-tuning's eval role</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h3>Cross-cutting roles (~4) <span class="v3-badge">expanded</span></h3>
+        <p><b>1&ndash;2 DevOps/Kubernetes engineers</b> &mdash; scale the control plane, inference replica pools, and training clusters out across nodes, manage the Kubernetes (or equivalent) layer underneath GPU scheduling, and run CI/CD for the stack itself. Two rather than one once more than one stream is running in production at once &mdash; serving, fine-tuning clusters and rollout clusters each have their own scaling failure modes.</p>
+        <p><b>1 security/compliance engineer</b> &mdash; BYOC deployment (section 09) means running inside a customer's own cloud account with their data; this role owns the access model, audit trail and compliance posture that finance/cyber/healthcare customers will ask about before they ever ask about latency.</p>
+        <p><b>1 technical program/product manager</b> &mdash; coordinates the three streams' overlapping profiling and cluster-ops surface area (see note below) so engineers aren't re-deriving the same scheduling decisions independently, and owns the roadmap's open decisions (section 10, section 12) as they get resolved.</p>
+      </div>
+
+      <p style="font-size:13px; color:var(--fg-dim)">Total first-pass estimate across all three product lines plus shared roles: about 20 engineers. Fine-tuning and RL rollouts overlap enough in measurement and cluster operations that one person could cover two of these roles early on. The DevOps/Kubernetes and security roles could also each start as one person covering all three lines until volume justifies more. The table sizes the work generously so a smaller first team isn't mistaken for the full need.</p>
+    </section>
+
+    <section id="risk">
+      <h2><span class="n">12</span> Open risks</h2>
+      <div class="risk">
+        <h3>We start with sophisticated buyers</h3>
+        <p style="margin-bottom:0; font-size:14px">Enterprises without a harness will buy the bundle (ChatGPT Enterprise, Claude or Gemini in Workspace), and inference alone won't win them today. So the question for who we sell to now is: <i>does this customer already have a harness?</i> If yes, they're our market: coding-agent companies, AI-native startups, companies reselling tokens, GPU clouds serving agent traffic, and enterprise platform teams. If no, they're &ldquo;not yet,&rdquo; not &ldquo;never.&rdquo; Reaching them depends on whether we build a harness, which is still open.</p>
+      </div>
+      <div class="risk">
+        <h3>Smart agent serving on its own is becoming free</h3>
+        <p style="margin-bottom:0; font-size:14px">NVIDIA Dynamo, llm-d, SGLang and LMCache already route by conversation memory and move it to cheaper storage, and funded startups sell memory-caching products. Sold on its own, this competes with free tools. Our edge is choosing the hardware, placing work by price, and showing measured results on the customer's own traffic, so we always pitch them together.</p>
+      </div>
+      <div class="risk">
+        <h3>Fine-tuning's measurement burden is real <span class="v3-badge">new</span></h3>
+        <p style="margin-bottom:0; font-size:14px">For inference, standard GPU monitoring (NVML) gives detailed data every few milliseconds. For training, peak memory per step and delays from GPUs waiting on each other usually need hooks inside each training framework, or custom tools, to measure accurately across frameworks and setups. We should budget for this before promising profiling across all frameworks as a finished feature.</p>
+      </div>
+    </section>
+
+    <section id="decisions">
+      <h2><span class="n">13</span> Proposed decisions</h2>
+      <p class="dek">For approval, numbered to continue the existing P1&ndash;P42 series.</p>
+      <div class="decisions">
+        <div class="decision">
+          <div class="id">P43</div>
+          <div>
+            <p>For now, add &ldquo;already has its own harness&rdquo; as a requirement for our ideal customer profile (ICP). Enterprises that want the full bundle are &ldquo;not yet&rdquo; rather than &ldquo;never,&rdquo; depending on the open decision about building a harness.</p>
+            <span class="target">&rarr; ICP</span>
+          </div>
+        </div>
+        <div class="decision">
+          <div class="id">P44</div>
+          <div>
+            <p>What we build: Phase 1 is choosing the hardware plus smart agent serving (same-server routing, keeping conversation memory, handling bursts), built on open-source tools with a standard OpenAI-style API. Choosing hardware for fine-tuning follows soon after. Phase 2 sends each step to the right model and hardware. Connectors and building a harness stay an open decision, with both views recorded.</p>
+            <span class="target">&rarr; Capability map</span>
+          </div>
+        </div>
+        <div class="decision">
+          <div class="id">P45</div>
+          <div>
+            <p>New hypothesis H12: on real agent traffic, our serving gets at least 1.3&times; more tokens per GPU than a well-tuned open-source setup (vLLM or SGLang with cache-aware routing), at the same p95 response time. Test it on AgentX. 1.3&times; matches our pilot success target.</p>
+            <span class="target">&rarr; Hypotheses</span>
+          </div>
+        </div>
+        <div class="decision">
+          <div class="id">P46</div>
+          <div>
+            <p>Messaging: &ldquo;Bring your agent and your model. We run them on the cheapest hardware that works, without redoing work already done.&rdquo; For investors, use the Apple-vs-Android comparison, with the caveat that the winner of the open side ended up owning the piece that tied it together.</p>
+            <span class="target">&rarr; Messaging</span>
+          </div>
+        </div>
+        <div class="decision">
+          <div class="id">P47</div>
+          <div>
+            <p><span class="v3-badge">new</span> New hypothesis H13: for a LoRA/QLoRA fine-tuning job on an open model, our profiler picks hardware and settings at least 1.5&times; cheaper per training step than the customer's usual choice, without taking longer to finish training. Test it on one open fine-tuning dataset with two model sizes.</p>
+            <span class="target">&rarr; Hypotheses</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="legend">
+      <span><span class="tag fact">fact</span> &mdash; sourced and checkable</span>
+      <span><span class="tag reported">reported</span> &mdash; another company's own figure, not independently checked</span>
+      <span><span class="tag claim">claim</span> &mdash; Runara's own claim, not yet shown on customer data</span>
+      <span><span class="tag hyp">hypothesis</span> &mdash; working hypothesis, not yet tested</span>
+    </div>
+    <footer>
+      v3 keeps v2's content, adds section 6 (fine-tuning), and expands section 7 (RL rollouts) and section 11 (staffing for all three product lines, plus the shared DevOps/Kubernetes role). The text has since been rewritten in plainer language without changing its substance. A draft for the team to react to and change before it goes into the master plan.
+    </footer>
+  </main>
+</div>
+
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.16.1/dist/mermaid.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+</body></html>

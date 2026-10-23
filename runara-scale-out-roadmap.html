@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Runara Scale-Out Roadmap</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#f6f9f7; --surface:#ffffff; --border:#d8e1dc; --border-soft:#e6ede9;
+    --fg:#10261f; --fg-dim:#56675f;
+    --deep:#0f3b2e; --deep-fg:#e8f5ee;
+    --new:#0a9b6a; --new-bg:#e0f4ea;
+    --pill:#eef2f0;
+    --display:'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif;
+    --body:'DM Sans', system-ui, sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1511; --surface:#121e19; --border:#26382f; --border-soft:#1d2d26;
+      --fg:#e5efe9; --fg-dim:#9bb0a6;
+      --deep:#17503e; --deep-fg:#e8f5ee;
+      --new:#3fd09b; --new-bg:#143327;
+      --pill:#1a2923;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1511; --surface:#121e19; --border:#26382f; --border-soft:#1d2d26;
+    --fg:#e5efe9; --fg-dim:#9bb0a6;
+    --deep:#17503e; --deep-fg:#e8f5ee;
+    --new:#3fd09b; --new-bg:#143327;
+    --pill:#1a2923;
+    color-scheme: dark;
+  }
+
+  :root{box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
+  *,*::before,*::after{box-sizing:inherit}
+  body{margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 var(--body); padding-inline:18px}
+  h1,h2,h3{font-family:var(--display); color:var(--fg); text-wrap:balance; letter-spacing:-.015em}
+  code,.mono{font-family:var(--mono); font-size:.86em}
+  .wrap{max-width:960px; margin:0 auto; padding-block:56px 96px}
+  section{margin-top:72px}
+  h2{font-size:clamp(24px,3.4vw,32px); margin:0 0 8px; line-height:1.15}
+  .lede{color:var(--fg-dim); max-width:66ch; margin:0 0 26px}
+
+  /* header */
+  .kicker{font-family:var(--mono); font-size:12px; color:var(--new); margin:0 0 14px}
+  h1{font-size:clamp(38px,7vw,64px); line-height:1.02; margin:0 0 18px; font-weight:700}
+  .thesis{font-size:18px; color:var(--fg-dim); max-width:62ch; margin:0 0 28px}
+  .facts{display:flex; flex-wrap:wrap; gap:14px 36px; margin:0; padding:0; list-style:none}
+  .facts li{display:flex; align-items:baseline; gap:8px; color:var(--fg-dim); font-size:15px}
+  .facts b{font-family:var(--display); font-size:30px; color:var(--fg); font-weight:700}
+
+  /* map */
+  .mapbox{background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px; overflow-x:auto}
+  .mapbox svg{display:block; width:100%; min-width:640px; height:auto}
+  .legend{display:flex; flex-wrap:wrap; gap:8px 22px; font-size:13px; color:var(--fg-dim); margin-top:14px}
+  .legend span{display:inline-flex; align-items:center; gap:8px}
+  .sw{width:22px; height:12px; border-radius:3px; border:1.5px solid var(--border); background:var(--surface)}
+  .sw.live{background:var(--deep); border-color:var(--deep)}
+  .sw.new{border:1.5px dashed var(--new); background:var(--new-bg)}
+  .sw.dep{width:22px; height:0; border:0; border-top:2px dashed var(--new); border-radius:0; background:none}
+
+  /* starting point */
+  .grid4{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px}
+  .fact{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 18px 16px}
+  .fact h3{font-size:17px; margin:0 0 6px; line-height:1.25}
+  .fact p{margin:0; font-size:14px; color:var(--fg-dim)}
+
+  /* workstreams */
+  .ws-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; align-items:start}
+  .ws{background:var(--surface); border:1.5px solid var(--new); border-radius:14px; padding:22px}
+  .ws header{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px}
+  .ws h3{font-size:21px; margin:0; line-height:1.15}
+  .badge{font-family:var(--mono); font-size:11.5px; background:var(--new-bg); color:var(--new); border-radius:999px; padding:3px 10px; white-space:nowrap}
+  .ws .what{color:var(--fg-dim); font-size:14.5px; margin:0 0 14px}
+  .ws h4{font-size:13px; font-weight:600; margin:16px 0 8px; color:var(--fg)}
+  .ws ul{margin:0; padding:0; list-style:none}
+  .ws li{position:relative; padding-left:18px; font-size:14px; margin-bottom:9px; color:var(--fg)}
+  .ws li::before{content:""; position:absolute; left:2px; top:.62em; width:6px; height:6px; border-radius:50%; background:var(--new)}
+  .done{margin-top:14px; padding:12px 14px; border-radius:10px; background:var(--new-bg); font-size:14px}
+  .done b{display:block; font-size:12.5px; margin-bottom:2px; color:var(--new)}
+
+  /* clouds */
+  .clouds{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px}
+  .cloud{border:1.5px dashed var(--new); border-radius:12px; padding:18px 20px; background:var(--surface)}
+  .cloud h3{font-size:20px; margin:0 0 4px}
+  .cloud p{margin:0 0 10px; font-size:14.5px; color:var(--fg-dim)}
+  .cloud .k8s{font-family:var(--mono); font-size:12.5px; color:var(--new)}
+  .note{margin-top:18px; color:var(--fg-dim); font-size:14.5px; max-width:74ch}
+
+  /* timeline */
+  .tl-scroll{background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; overflow-x:auto}
+  .tl{min-width:760px; display:grid; grid-template-columns:120px repeat(24,1fr); column-gap:4px; row-gap:10px; position:relative}
+  .tl .mo{grid-row:1; font-family:var(--mono); font-size:11.5px; color:var(--fg-dim); border-left:1px solid var(--border); padding-left:6px}
+  .tl .lane{display:flex; flex-direction:column; justify-content:center; font-weight:600; font-size:14px; line-height:1.2}
+  .tl .lane small{font-family:var(--mono); font-weight:400; font-size:11px; color:var(--fg-dim); margin-top:3px}
+  .bar{border:1.5px solid var(--new); border-radius:9px; padding:9px 11px; font-size:12.5px; line-height:1.3; background:var(--surface); min-height:64px; display:flex; align-items:center}
+  .bar.later{border-style:dashed; background:var(--new-bg)}
+  .ms{display:flex; flex-wrap:wrap; gap:10px 28px; margin-top:16px; font-size:14px}
+  .ms span{display:inline-flex; gap:8px; align-items:center}
+  .ms b{font-family:var(--mono); font-size:12px; background:var(--deep); color:var(--deep-fg); border-radius:6px; padding:2px 8px; font-weight:500}
+
+  /* team */
+  .tbl-scroll{overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:14px}
+  table{border-collapse:collapse; width:100%; min-width:640px; font-size:14px}
+  th,td{text-align:left; padding:14px 16px; vertical-align:top; border-bottom:1px solid var(--border-soft)}
+  th{font-size:13px; font-weight:600; color:var(--fg-dim); background:var(--pill)}
+  tr:last-child td{border-bottom:0}
+  td:first-child{font-weight:600; white-space:nowrap}
+
+  footer{margin-top:64px; padding-top:18px; border-top:1px solid var(--border); font-size:13px; color:var(--fg-dim)}
+
+  /* svg tokens */
+  .s-ink{fill:var(--fg)} .s-dim{fill:var(--fg-dim)} .s-new{fill:var(--new)}
+  .s-pill{fill:var(--pill); stroke:var(--border); stroke-width:1.2}
+  .s-line{stroke:var(--fg-dim); stroke-width:1.5; fill:none}
+  .s-dep{stroke:var(--new); stroke-width:1.8; stroke-dasharray:6 5; fill:none}
+  .s-live{fill:var(--deep)}
+  .s-live-t{fill:var(--deep-fg)}
+  .s-box{fill:var(--surface); stroke:var(--new); stroke-width:1.8}
+  .s-box-d{fill:var(--new-bg); stroke:var(--new); stroke-width:1.8; stroke-dasharray:6 4}
+  .s-chip{fill:var(--new-bg)}
+  svg text{font-family:var(--body)}
+  svg .mono{font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="kicker">Platform plan · Nov 2026 – Apr 2027</p>
+    <h1>Runara Scale-Out Roadmap</h1>
+    <p class="thesis">Three bets: serverless deployments, four more BYOC clouds, and Kubernetes autoscaling for every deployment that leaves the Analyzer, Deployments and Evaluate tabs. Six engineers, roughly 24 weeks.</p>
+    <ul class="facts">
+      <li><b>3</b> workstreams</li>
+      <li><b>6</b> engineers</li>
+      <li><b>8 → 12</b> clouds</li>
+      <li><b>24</b> weeks</li>
+    </ul>
+  </header>
+
+  <section aria-labelledby="map-h">
+    <h2 id="map-h">Runara at the centre, three workstreams around it</h2>
+    <p class="lede">All three tabs deploy through one pipeline. Green dashed shapes are new work. The dashed arrows are dependencies: serverless runs on the autoscaler, and the autoscaler needs a cluster on each cloud.</p>
+
+    <div class="mapbox">
+      <svg viewBox="0 0 900 640" role="img" aria-label="Diagram: the Analyzer, Deployments and Evaluate tabs deploy through one pipeline into the runara.ai control plane, which feeds three new workstreams: serverless deployments, Kubernetes autoscaling and four more BYOC clouds. Serverless depends on the autoscaler, and the autoscaler needs a cluster on each cloud.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="s-ink" style="fill:var(--fg-dim)"/></marker>
+          <marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--new)"/></marker>
+        </defs>
+
+        <text x="450" y="24" text-anchor="middle" class="s-dim mono" font-size="11">product tabs that deploy</text>
+        <rect x="250" y="36" width="120" height="38" rx="19" class="s-pill"/><text x="310" y="60" text-anchor="middle" class="s-ink" font-size="13.5" font-weight="600">Analyzer</text>
+        <rect x="390" y="36" width="120" height="38" rx="19" class="s-pill"/><text x="450" y="60" text-anchor="middle" class="s-ink" font-size="13.5" font-weight="600">Deployments</text>
+        <rect x="530" y="36" width="120" height="38" rx="19" class="s-pill"/><text x="590" y="60" text-anchor="middle" class="s-ink" font-size="13.5" font-weight="600">Evaluate</text>
+        <path d="M310 74V108H590V74M450 74V108M450 108V232" class="s-line" marker-end="url(#ah)"/>
+        <text x="466" y="170" class="s-dim mono" font-size="11">one deploy pipeline</text>
+
+        <!-- centre -->
+        <rect x="340" y="236" width="220" height="104" rx="16" class="s-live"/>
+        <text x="450" y="262" text-anchor="middle" class="s-live-t mono" font-size="10.5" opacity=".7">runara org</text>
+        <text x="450" y="290" text-anchor="middle" class="s-live-t" font-size="24" font-weight="700" style="font-family:var(--display)">runara.ai</text>
+        <text x="450" y="312" text-anchor="middle" class="s-live-t" font-size="12">Control plane · Convex + Next.js</text>
+        <text x="450" y="328" text-anchor="middle" class="s-live-t" font-size="12">Billing · API keys · Analyzer</text>
+
+        <!-- serverless -->
+        <rect x="20" y="206" width="250" height="196" rx="14" class="s-box"/>
+        <text x="38" y="236" class="s-ink" font-size="16" font-weight="700" style="font-family:var(--display)">Serverless deployments</text>
+        <text x="38" y="256" class="s-dim" font-size="12">Evaluate-style endpoints for any model</text>
+        <rect x="38" y="268" width="84" height="22" rx="11" class="s-chip"/><text x="80" y="283" text-anchor="middle" class="s-new mono" font-size="11">2 engineers</text>
+        <g class="s-ink" font-size="12.5">
+          <circle cx="44" cy="311" r="3" class="s-new"/><text x="56" y="315">OpenAI-compatible request gateway</text>
+          <circle cx="44" cy="336" r="3" class="s-new"/><text x="56" y="340">Scale-to-zero with warm pools</text>
+          <circle cx="44" cy="361" r="3" class="s-new"/><text x="56" y="365">Fast cold starts from cached weights</text>
+          <circle cx="44" cy="386" r="3" class="s-new"/><text x="56" y="390">Pay per token or per GPU-second</text>
+        </g>
+        <path d="M340 288C300 288 300 304 276 304" class="s-line" marker-end="url(#ah)" transform="translate(0 -8)"/>
+
+        <!-- byoc -->
+        <rect x="630" y="206" width="250" height="196" rx="14" class="s-box"/>
+        <text x="648" y="236" class="s-ink" font-size="16" font-weight="700" style="font-family:var(--display)">Four more BYOC clouds</text>
+        <text x="648" y="256" class="s-dim" font-size="12">Vultr · DigitalOcean · CoreWeave · Oracle OCI</text>
+        <rect x="648" y="268" width="84" height="22" rx="11" class="s-chip"/><text x="690" y="283" text-anchor="middle" class="s-new mono" font-size="11">2 engineers</text>
+        <g class="s-ink" font-size="12.5">
+          <circle cx="654" cy="311" r="3" class="s-new"/><text x="666" y="315">Adapter, credentials, Packer image</text>
+          <circle cx="654" cy="336" r="3" class="s-new"/><text x="666" y="340">Pricing fetcher and crawler</text>
+          <circle cx="654" cy="361" r="3" class="s-new"/><text x="666" y="365">Analyzer recommends, one-click deploy</text>
+          <circle cx="654" cy="386" r="3" class="s-new"/><text x="666" y="390">Then join K8s: VKE, DOKS, CKS, OKE</text>
+        </g>
+        <path d="M560 288C600 288 600 296 624 296" class="s-line" marker-end="url(#ah)" transform="translate(0 -8)"/>
+
+        <!-- k8s -->
+        <rect x="260" y="436" width="380" height="190" rx="14" class="s-box"/>
+        <text x="278" y="466" class="s-ink" font-size="16" font-weight="700" style="font-family:var(--display)">Kubernetes autoscaling</text>
+        <text x="278" y="486" class="s-dim" font-size="12">For every deployment from all three tabs</text>
+        <rect x="548" y="450" width="84" height="22" rx="11" class="s-chip"/><text x="590" y="465" text-anchor="middle" class="s-new mono" font-size="11">2 engineers</text>
+        <g class="s-ink" font-size="12.5">
+          <circle cx="284" cy="511" r="3" class="s-new"/><text x="296" y="515">Replica scaling on vLLM queue depth and KV cache</text>
+          <circle cx="284" cy="536" r="3" class="s-new"/><text x="296" y="540">GPU node autoscaling on each cloud’s managed K8s</text>
+          <circle cx="284" cy="561" r="3" class="s-new"/><text x="296" y="565">Runara agent in each cluster reports to Convex</text>
+          <circle cx="284" cy="586" r="3" class="s-new"/><text x="296" y="590">VM autoscaler for Vast, RunPod and Lambda</text>
+        </g>
+        <text x="278" y="614" class="s-dim mono" font-size="10.5">EKS · GKE · AKS · VKE · DOKS · CKS · OKE</text>
+        <path d="M450 340V430" class="s-line" marker-end="url(#ah)"/>
+
+        <!-- dependencies -->
+        <path d="M150 402C150 470 190 520 254 530" class="s-dep" marker-start="url(#ahg)" transform="translate(0 0)"/>
+        <text x="86" y="470" class="s-new mono" font-size="10.5">scale-to-zero runs</text>
+        <text x="86" y="484" class="s-new mono" font-size="10.5">on the autoscaler</text>
+        <path d="M646 530C700 520 755 470 755 408" class="s-dep" marker-end="url(#ahg)"/>
+        <text x="716" y="470" class="s-new mono" font-size="10.5">autoscaler needs a</text>
+        <text x="716" y="484" class="s-new mono" font-size="10.5">cluster on each cloud</text>
+      </svg>
+    </div>
+    <div class="legend">
+      <span><i class="sw live"></i>Live today</span>
+      <span><i class="sw new"></i>To build</span>
+      <span><i class="sw dep"></i>Depends on</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="start-h">
+    <h2 id="start-h">What the code does today</h2>
+    <p class="lede">Read from the repo, so the plan builds on what exists rather than starting over.</p>
+    <div class="grid4">
+      <div class="fact"><h3>Evaluate already scales to zero, on GCP only</h3><p>Each hosted model boots its own GCE VM (<code>convex/models.ts</code>). An idle sweep watches heartbeats, but idle auto-stop was recently switched off, so users stop models by hand.</p></div>
+      <div class="fact"><h3>Every deployment is one dedicated machine</h3><p>A VM, pod or container per user, running vLLM or SGLang. Replicas, load balancing and request-based scaling don’t exist yet.</p></div>
+      <div class="fact"><h3>No Kubernetes anywhere</h3><p>No clusters, Helm or Terraform. Infra is Packer images, cloud APIs called from Convex actions, and crons that run every 1 to 5 minutes.</p></div>
+      <div class="fact"><h3>Eight clouds, six with BYOC</h3><p>AWS, GCP, Azure (beta), Lambda, Vast and RunPod have BYOC. Scaleway and Koyeb are managed only. Analyzer “Deploy” supports only AWS, GCP, Lambda and Vast.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ws-h">
+    <h2 id="ws-h">Who builds what</h2>
+    <p class="lede">Start Kubernetes autoscaling first, because serverless sits on top of it.</p>
+    <div class="ws-grid">
+
+      <article class="ws">
+        <header><h3>Kubernetes autoscaling</h3><span class="badge">2 engineers</span></header>
+        <p class="what">The foundation. Start it first, because serverless sits on top of it.</p>
+        <h4>Scope</h4>
+        <ul>
+          <li>Create a cluster in the customer’s account (BYOC) or Runara’s (managed), with GPU node pools.</li>
+          <li>Scale replicas on vLLM metrics: waiting requests, KV-cache usage and time to first token. KEDA or HPA drives it.</li>
+          <li>The cluster autoscaler adds and removes GPU nodes, capped by budget and quota.</li>
+          <li>An in-cluster Runara agent posts state back to Convex HTTP endpoints. Convex stays the source of truth.</li>
+          <li>A VM-level autoscaler for marketplaces with no managed K8s (Vast, RunPod, Lambda). It reuses the AWS warm-pool pattern.</li>
+        </ul>
+        <div class="done"><b>Done when</b>A deployment from any tab gets min/max replicas, scales under load and scales back down.</div>
+      </article>
+
+      <article class="ws">
+        <header><h3>Serverless deployments</h3><span class="badge">2 engineers</span></header>
+        <p class="what">Make the Evaluate experience a product: pick a model, get an endpoint, pay only for use.</p>
+        <h4>Scope</h4>
+        <ul>
+          <li>One shared gateway that checks <code>rk_live_</code> keys, queues requests and routes them to warm replicas. It replaces the auth proxy on each box.</li>
+          <li>Usage metering into Stripe, priced per token or per GPU-second.</li>
+          <li>Scale-to-zero with a small warm pool for popular models.</li>
+          <li>Cold-start work: cached weights, the RunAI streamer and pre-baked images, aimed at under 60 s for 70B-class models.</li>
+          <li>Move the four Evaluate models onto it first, then open it to customer models and BYOC.</li>
+        </ul>
+        <div class="done"><b>Done when</b>A customer deploys a model serverless, it idles at $0, and the first request wakes it.</div>
+      </article>
+
+      <article class="ws">
+        <header><h3>Four more BYOC clouds</h3><span class="badge">2 engineers</span></header>
+        <p class="what">Each engineer takes two clouds. After that, they join the K8s team to stand up a cluster on each new cloud.</p>
+        <h4>Scope per cloud</h4>
+        <ul>
+          <li>An adapter (<code>convex/&lt;cloud&gt;.ts</code>) wired into the launch and terminate dispatch in <code>experiments.ts</code>.</li>
+          <li>BYOC credentials (<code>&lt;cloud&gt;Byoc.ts</code>) and a form in Settings → Cloud setup.</li>
+          <li>A GPU image built with Packer, a pricing fetcher and a crawler adapter.</li>
+          <li>Entries in <code>cloud-providers.ts</code> and the Analyzer deploy mapping.</li>
+        </ul>
+        <div class="done"><b>Done when</b>A customer connects their own account, the Analyzer recommends that cloud, and one click deploys there.</div>
+      </article>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="cl-h">
+    <h2 id="cl-h">The four clouds to add, and why</h2>
+    <p class="lede">Each one has on-demand GPUs, a usable API and a managed Kubernetes service. That last point matters, because it lets the autoscaling and BYOC workstreams use the same cluster code.</p>
+    <div class="clouds">
+      <div class="cloud"><h3>Vultr</h3><p>A100, H100 and AMD MI300X with a simple REST API. A quick first integration.</p><span class="k8s">K8s: VKE</span></div>
+      <div class="cloud"><h3>DigitalOcean</h3><p>H100 GPU Droplets. Popular with the startups already in our funnel.</p><span class="k8s">K8s: DOKS</span></div>
+      <div class="cloud"><h3>CoreWeave</h3><p>The largest GPU-native cloud, built around Kubernetes. H100, H200 and B200.</p><span class="k8s">K8s: CKS</span></div>
+      <div class="cloud"><h3>Oracle OCI</h3><p>Large H100, H200 and B200 bare-metal fleet. Enterprises often have credits there.</p><span class="k8s">K8s: OKE</span></div>
+    </div>
+    <p class="note">Alternates if one falls through: Nebius, Crusoe, Hyperstack. Smaller cleanups for the same team: take Azure BYOC out of beta and add BYOC for Scaleway.</p>
+  </section>
+
+  <section aria-labelledby="tl-h">
+    <h2 id="tl-h">24 weeks, three tracks in parallel</h2>
+    <p class="lede">Autoscaling and the cloud adapters start in week 1. Serverless also starts in week 1, building the gateway and billing on today’s GCP VMs, and moves onto the autoscaler once it’s ready.</p>
+    <div class="tl-scroll">
+      <div class="tl" role="group" aria-label="Timeline by week, November to April">
+        <div class="mo" style="grid-column:2 / span 4">Nov</div>
+        <div class="mo" style="grid-column:6 / span 4">Dec</div>
+        <div class="mo" style="grid-column:10 / span 4">Jan</div>
+        <div class="mo" style="grid-column:14 / span 4">Feb</div>
+        <div class="mo" style="grid-column:18 / span 4">Mar</div>
+        <div class="mo" style="grid-column:22 / span 4">Apr</div>
+
+        <div class="lane" style="grid-row:2">K8s autoscaling<small>2 eng</small></div>
+        <div class="bar" style="grid-row:2; grid-column:2 / span 4">Design + EKS/GKE pilot</div>
+        <div class="bar" style="grid-row:2; grid-column:6 / span 6">Deployments + Analyzer on K8s (AWS, GCP, Azure)</div>
+        <div class="bar later" style="grid-row:2; grid-column:12 / span 14">New-cloud clusters + VM autoscaler for marketplaces</div>
+
+        <div class="lane" style="grid-row:3">Serverless<small>2 eng</small></div>
+        <div class="bar" style="grid-row:3; grid-column:2 / span 6">Gateway, metering, Stripe billing</div>
+        <div class="bar" style="grid-row:3; grid-column:8 / span 6">Move Evaluate models onto autoscaler</div>
+        <div class="bar later" style="grid-row:3; grid-column:14 / span 12">Customer models, then BYOC</div>
+
+        <div class="lane" style="grid-row:4">BYOC clouds<small>2 eng</small></div>
+        <div class="bar" style="grid-row:4; grid-column:2 / span 4">Vultr + DigitalOcean</div>
+        <div class="bar" style="grid-row:4; grid-column:6 / span 4">CoreWeave + Oracle OCI</div>
+        <div class="bar" style="grid-row:4; grid-column:10 / span 4">Analyzer, pricing, crawler for all 4</div>
+        <div class="bar later" style="grid-row:4; grid-column:14 / span 12">Join K8s track: clusters on VKE, DOKS, CKS, OKE</div>
+      </div>
+      <div class="ms">
+        <span><b>Wk 8</b>Autoscaling beta</span>
+        <span><b>Wk 12</b>4 clouds live</span>
+      </div>
+    </div>
+    <p class="note">Solid bars are the work scheduled through January. Dashed bars start in February and are drawn to the end of the window; the source plan’s timeline view was cut off after February, so their labels follow the workstream scopes.</p>
+  </section>
+
+  <section aria-labelledby="team-h">
+    <h2 id="team-h">Six engineers in three pairs</h2>
+    <p class="lede">With five engineers, give the clouds track one person. The four clouds would then land around week 16 instead of week 8, and everything else stays on schedule.</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Workstream</th><th>Eng</th><th>Profile</th><th>Owns</th></tr></thead>
+        <tbody>
+          <tr><td>K8s autoscaling</td><td>2</td><td>Platform / SRE: Kubernetes, GPU operator, KEDA, cluster autoscaler</td><td>Cluster templates per cloud, scaling policies, Runara agent, VM autoscaler for marketplaces</td></tr>
+          <tr><td>Serverless</td><td>2</td><td>One backend engineer (TypeScript/Convex, billing). One inference engineer (vLLM/SGLang, cold starts).</td><td>Gateway, usage metering, scale-to-zero, Evaluate migration, cold-start targets</td></tr>
+          <tr><td>BYOC clouds</td><td>2</td><td>Backend / integrations: cloud APIs, IAM, Packer</td><td>Four adapters, credential flows, images, pricing and crawler</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Source: Runara Scale-Out Roadmap, Nov 2026 – Apr 2027.</footer>
+</div>
+</body>
+</html>

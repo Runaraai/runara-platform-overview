@@ -1,0 +1,389 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>One API, Every Model</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#f7f5f1; --surface:#ffffff; --border:#e4ded3;
+    --fg:#211d16; --fg-dim:#6b6457;
+    --accent:#b5651d; --accent-fg:#fff8ef;
+    --fact:#2f6b52; --reported:#3d5a8a; --claim:#b5651d; --hyp:#8a6d3b;
+    --display:'Source Serif 4', Georgia, serif;
+    --body:'IBM Plex Sans', system-ui, sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17140f; --surface:#1f1b14; --border:#332c21;
+      --fg:#efe9dd; --fg-dim:#a89f8e;
+      --accent:#e3974a; --accent-fg:#1a1208;
+      --fact:#6fc19e; --reported:#8fa6e0; --claim:#e3974a; --hyp:#d8b877;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17140f; --surface:#1f1b14; --border:#332c21;
+    --fg:#efe9dd; --fg-dim:#a89f8e;
+    --accent:#e3974a; --accent-fg:#1a1208;
+    --fact:#6fc19e; --reported:#8fa6e0; --claim:#e3974a; --hyp:#d8b877;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--fg); font-family:var(--body); line-height:1.6; padding-inline:16px}
+  h1,h2,h3{font-family:var(--display); text-wrap:balance; color:var(--fg)}
+  .wrap{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:230px minmax(0,760px); gap:48px; padding-block:48px 96px}
+  @media (max-width:860px){ .wrap{grid-template-columns:1fr} }
+
+  nav.toc{position:sticky; top:calc(24px + env(safe-area-inset-top,0px)); align-self:start; font-size:12.5px}
+  @media (max-width:860px){ nav.toc{position:static; order:2; border-top:1px solid var(--border); padding-top:20px; margin-top:12px} }
+  nav.toc .label{font-family:var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--fg-dim); font-size:10.5px; margin-bottom:10px}
+  nav.toc a{display:block; color:var(--fg-dim); text-decoration:none; padding:4.5px 0; border-left:2px solid transparent; padding-left:10px}
+  nav.toc a:hover{color:var(--fg); border-left-color:var(--accent)}
+
+  header.doc{margin-bottom:8px}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent)}
+  h1.title{font-size:clamp(28px,4vw,40px); margin:10px 0 6px; font-weight:700}
+  .thesis{font-size:18px; color:var(--fg-dim); font-style:italic; margin:0 0 18px; max-width:62ch}
+  .meta{display:flex; flex-wrap:wrap; gap:14px; font-family:var(--mono); font-size:12px; color:var(--fg-dim); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:12px 0; margin-bottom:36px}
+  .meta b{color:var(--fg); font-weight:500}
+
+  section{margin-bottom:52px; scroll-margin-top:24px}
+  h2{font-size:22px; display:flex; align-items:baseline; gap:10px; margin-bottom:4px}
+  h2 .n{font-family:var(--mono); color:var(--accent); font-size:14px}
+  .dek{color:var(--fg-dim); margin:0 0 20px; max-width:60ch}
+  p{margin:0 0 14px; max-width:68ch}
+  ul,ol{margin:0 0 14px; padding-left:22px}
+  li{margin-bottom:8px; max-width:62ch}
+
+  table.cmp{width:100%; border-collapse:collapse; font-size:13.5px; margin:18px 0}
+  table.cmp th,table.cmp td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top}
+  table.cmp th{font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-dim); font-weight:500}
+  table.cmp td:first-child{font-weight:600; width:24%; color:var(--fg-dim); font-size:13px}
+  .tbl-wrap{overflow-x:auto}
+  .num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:18px 0}
+  .stat{background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:14px 16px}
+  .stat b{display:block; font-family:var(--mono); font-size:22px; color:var(--accent); font-variant-numeric:tabular-nums}
+  .stat span{font-size:12px; color:var(--fg-dim)}
+
+  .tag{display:inline-block; font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border-radius:3px; margin-left:6px; vertical-align:middle; white-space:nowrap}
+  .tag.fact{background:color-mix(in srgb, var(--fact) 20%, transparent); color:var(--fact)}
+  .tag.reported{background:color-mix(in srgb, var(--reported) 20%, transparent); color:var(--reported)}
+  .tag.claim{background:color-mix(in srgb, var(--claim) 20%, transparent); color:var(--claim)}
+  .tag.hyp{background:color-mix(in srgb, var(--hyp) 20%, transparent); color:var(--hyp)}
+
+  .risk{background:color-mix(in srgb, var(--hyp) 10%, var(--surface)); border:1px solid color-mix(in srgb, var(--hyp) 40%, var(--border)); border-radius:6px; padding:16px 18px; margin-bottom:14px}
+  .risk h3{font-size:15px; margin:0 0 8px; font-family:var(--body); font-weight:600}
+  .callout{background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:16px 18px; margin:18px 0}
+  .callout h3{font-size:14px; margin:0 0 8px; font-family:var(--body); font-weight:600}
+  .callout p{margin-bottom:0; font-size:14px}
+
+  .analogy{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0}
+  @media (max-width:560px){ .analogy{grid-template-columns:1fr} }
+  .analogy .card{background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:18px}
+  .analogy .card h3{font-size:15px; margin:0 0 8px}
+  .analogy .card.accent{border-color:var(--accent)}
+
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--fg-dim); border-top:1px solid var(--border); padding-top:18px; margin-top:8px}
+  footer{font-size:12px; color:var(--fg-dim); border-top:1px solid var(--border); padding-top:18px; margin-top:40px}
+</style>
+
+<div class="wrap">
+  <nav class="toc">
+    <div class="label">Contents</div>
+    <a href="#architecture">1. How routing quality is engineered</a>
+    <a href="#flywheel">2. The flywheel: rankings as discovery</a>
+    <a href="#good">3. What makes it a very good company</a>
+    <a href="#risks">4. The honest risks</a>
+    <a href="#landscape">5. Competitive landscape</a>
+    <a href="#fit">6. Where Runara fits</a>
+    <a href="#today">7. Are we already a single API?</a>
+    <a href="#proposed">8. A proposed architecture</a>
+    <a href="#open">9. Open questions</a>
+  </nav>
+
+  <main>
+    <header class="doc">
+      <div class="eyebrow">Market research &middot; draft for team review</div>
+      <h1 class="title">One API, Every Model</h1>
+      <p class="thesis">OpenRouter proved that routing between models is itself a business &mdash; a $1.3B one three months before Stripe paid roughly 5&times; that for it. What it got right, what it's exposed to, and where Runara's hardware-choice engine already overlaps with it.</p>
+      <div class="meta">
+        <span><b>Status</b> Research brief &mdash; for team discussion</span>
+        <span><b>Subject</b> OpenRouter (openrouter.ai), and a possible Runara single-API product</span>
+      </div>
+    </header>
+
+    <section id="architecture">
+      <h2><span class="n">01</span> How routing quality is engineered</h2>
+      <p class="dek">The product promise is simple &mdash; one API, always available, close to the fastest option &mdash; but it rests on a specific, well-documented routing architecture with two distinct failover layers.</p>
+
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Layer</th><th>What triggers it</th><th>What happens</th></tr></thead>
+          <tbody>
+            <tr><td>Provider-layer failover</td><td>An upstream host serving the <i>same model</i> goes down or is rate-limited</td><td>Request is retried against a different provider serving that identical model &mdash; the model answering never changes, only who runs it <span class="tag reported">reported</span></td></tr>
+            <tr><td>Model-layer failover</td><td>Context-length errors, moderation flags, rate limits, or downtime that provider-layer retry can't fix</td><td>Falls through a customer-supplied priority list of models <span class="tag reported">reported</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The default load-balancing algorithm, as OpenRouter documents it: (1) exclude any provider with a significant outage in the last 30 seconds; (2) among the remaining stable providers, weight selection by the inverse square of price &mdash; favoring cheaper providers without strictly always picking the single cheapest; (3) everything else becomes an ordered fallback list <span class="tag reported">reported</span>. The whole routing decision adds roughly 25ms of overhead <span class="tag reported">reported</span> &mdash; and one independent 2026 benchmark found OpenRouter requests arriving ~70ms <i>faster</i> to first token than calling OpenAI directly across 200 sampled requests <span class="tag claim">claim</span>, meaning the extra hop only costs you on the requests that actually fail over.</p>
+
+      <div class="callout">
+        <h3>The part worth noticing</h3>
+        <p>None of this requires OpenRouter to run its own GPUs. The entire architecture is a decision layer sitting in front of other people's inference &mdash; the same shape as Runara's control plane in front of its own replica pools, just one layer further out, deciding <i>which provider</i> instead of <i>which replica</i>.</p>
+      </div>
+    </section>
+
+    <section id="flywheel">
+      <h2><span class="n">02</span> The flywheel: rankings as discovery</h2>
+      <p class="dek">OpenRouter's public model leaderboard, ranked by live token share, turns every request it routes into a data point that makes the platform more useful to the next developer deciding what to try.</p>
+
+      <p>As of mid-October 2026, open and Chinese-lab models dominate OpenRouter's tracked token volume: DeepSeek V4.1 Flash alone accounts for roughly 14.9% of tracked tokens, and the platform is reportedly routing on the order of 3.6 trillion tokens per day <span class="tag reported">reported</span>. Chinese-model traffic share rose from roughly 2% to 45&ndash;46% over the course of a year <span class="tag reported">reported</span> &mdash; a genuinely striking shift, and one no single lab's own dashboard would show as clearly as an aggregator's does.</p>
+
+      <div class="stats">
+        <div class="stat"><b>2%&rarr;46%</b><span>Chinese-model share of OpenRouter token volume, over ~1 year <span class="tag reported">reported</span></span></div>
+        <div class="stat"><b>46%</b><span>of platform revenue from Anthropic models <span class="tag reported">reported</span></span></div>
+        <div class="stat"><b>12%</b><span>Anthropic's share of token <i>volume</i> over the same period <span class="tag reported">reported</span></span></div>
+      </div>
+
+      <p>That last pair of numbers is the most useful single insight in all of OpenRouter's public data: <b>Anthropic captures roughly 46% of platform revenue on only about 12% of traffic</b> <span class="tag reported">reported</span>. Premium, enterprise-trusted models monetize far above their volume share; cheap open models drive the volume the leaderboard advertises. A pure aggregator has to carry both ends of that spread. It's a direct data point for how Runara should think about which models and which customers actually produce margin, not just traffic.</p>
+    </section>
+
+    <section id="good">
+      <h2><span class="n">03</span> What makes it a very good company</h2>
+      <p class="dek">Six simple decisions that compound into something hard to copy.</p>
+
+      <ul>
+        <li><b>Pass-through pricing, zero markup.</b> Developers can verify it isn&rsquo;t charging more than going direct <span class="tag reported">reported</span>.</li>
+        <li><b>Fast new-model integration.</b> New models reportedly go live within hours of release <span class="tag claim">claim</span>, and being first matters.</li>
+        <li><b>Privacy as a product feature.</b> No prompt logging by default, plus a <code>data_collection: "deny"</code> option that limits routing to no-retention providers <span class="tag reported">reported</span>.</li>
+        <li><b>The public leaderboard.</b> Turns usage into a discovery engine that sends more traffic through OpenRouter.</li>
+        <li><b>Generous BYOK.</b> $25K/month of free routing on your own keys removes the main objection to adding a middle layer.</li>
+        <li><b>US and Chinese labs under one roof.</b> Hyperscaler gateways mirror their own cloud&rsquo;s roster; OpenRouter spans labs no single cloud carries.</li>
+      </ul>
+    </section>
+
+    <section id="risks">
+      <h2><span class="n">04</span> The honest risks</h2>
+      <p class="dek">None of this is written to be uncritical. OpenRouter's own public data and independent commentary both point at real structural exposure.</p>
+
+      <div class="risk">
+        <h3>It may be eroding its own reason to exist</h3>
+        <p style="margin-bottom:0; font-size:14px">One analysis frames this precisely: the better OpenRouter gets at commoditizing model choice, the faster models converge on price and performance, which structurally shrinks the value of routing between them over time <span class="tag reported">reported</span>, as argued by BigGo Finance's coverage of the platform's own usage data. A successful aggregator accelerates the commoditization that makes aggregation less valuable.</p>
+      </div>
+      <div class="risk">
+        <h3>The take rate is thin and easy to undercut</h3>
+        <p style="margin-bottom:0; font-size:14px">A ~5&ndash;5.5% fee has low barriers to entry. LiteLLM offers the same routing logic as a free, self-hosted open-source library; a large customer with engineering capacity can simply run the equivalent internally and keep the 5%.</p>
+      </div>
+      <div class="risk">
+        <h3>Provider disintermediation is a standing structural risk</h3>
+        <p style="margin-bottom:0; font-size:14px">OpenRouter depends on providers continuing to want to be routed through. Nothing in the public record suggests a major lab is currently restricting this, but a platform whose core business is sitting between providers and developers is always exposed to a provider deciding it would rather not be sat in front of.</p>
+      </div>
+      <div class="risk">
+        <h3>Public rankings aren't the whole market</h3>
+        <p style="margin-bottom:0; font-size:14px">Developer discussion (Hacker News, LessWrong) flags that OpenRouter's leaderboard reflects <i>routed</i> traffic only &mdash; Together, Fireworks, and private enterprise deployments don't disclose comparable per-model breakdowns, so "OpenRouter's #1 model" isn't necessarily the industry's most-used model <span class="tag reported">reported</span>. The same threads note that failing to pin a specific provider in a request can invalidate apples-to-apples benchmarking, since "the same model" served by different backends can run different quantization and behave differently <span class="tag reported">reported</span>.</p>
+      </div>
+    </section>
+
+    <section id="landscape">
+      <h2><span class="n">05</span> Competitive landscape</h2>
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Player</th><th>Position</th><th>How it differs from OpenRouter</th></tr></thead>
+          <tbody>
+            <tr><td>LiteLLM</td><td>Open-source routing library/proxy</td><td>You run it yourself &mdash; same OpenAI-format interface to 100+ providers, cost tracking, budgets, virtual keys, but no hosted leaderboard and no managed take-rate business behind it</td></tr>
+            <tr><td>Portkey</td><td>Routing-as-production-infrastructure</td><td>Positioned for governance-heavy orgs: canary testing, conditional routing, caching, deep observability, rather than developer-first breadth of catalog</td></tr>
+            <tr><td>Together AI / Fireworks AI</td><td>Model hosts, not aggregators</td><td>They host open models themselves with optimized inference, fine-tuning and dedicated endpoints &mdash; competing with the neocloud/hardware layer, not the aggregation layer</td></tr>
+            <tr><td>Hyperscaler gateways (Bedrock, Vertex, Azure AI, Vercel AI Gateway)</td><td>"Many models, one bill," bundled into the cloud a customer already uses</td><td>Compress OpenRouter's edge for customers already committed to one cloud, but rarely mirror OpenRouter's full catalog breadth across both US and Chinese labs</td></tr>
+            <tr><td>Direct provider APIs</td><td>Going straight to OpenAI, Anthropic, etc.</td><td>Zero middle-layer latency and no take rate, at the cost of integrating and failing over between providers yourself</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="fit">
+      <h2><span class="n">06</span> Where Runara fits</h2>
+      <p class="dek">OpenRouter solved "which model, which provider." Runara already solves an adjacent, harder problem for its own replica pools: "which hardware, which setup." The two compose into something neither one is alone.</p>
+
+      <p>Every one of OpenRouter's six strengths in section 03 is about the <i>model and provider</i> axis. None of it touches hardware: OpenRouter's job ends once it's picked which upstream provider answers a request &mdash; whatever chip that provider happens to run on, at whatever efficiency, is invisible to OpenRouter and to the developer. That's the gap. Runara's existing control plane (see the Harness-Aware Serving documents) already makes the hardware-and-engine decision &mdash; which chip, which quantization, which parallelism &mdash; underneath a single model. A single API that also routes across <i>models and providers</i>, the way OpenRouter does, is a natural outward extension of the same decision layer, not a new business.</p>
+
+      <div class="analogy">
+        <div class="card">
+          <h3>What OpenRouter decides</h3>
+          <p style="font-size:13px; margin-bottom:0">Which model. Which provider serves that model. Nothing about how efficiently that provider runs it.</p>
+        </div>
+        <div class="card accent">
+          <h3>What Runara could add on top</h3>
+          <p style="font-size:13px; margin-bottom:0">Which model, which provider or Runara-hosted replica, <i>and</i> which hardware/engine/quantization &mdash; routed on measured cost-per-token and latency, not just price-per-token the provider lists.</p>
+        </div>
+      </div>
+
+      <p>This isn't a claim that Runara should become OpenRouter &mdash; it's a narrower, sharper one: Runara's own hosted replicas are one more "provider" in an OpenRouter-style routing table, except Runara actually knows, from direct measurement, how that provider (itself) performs per model shape and kernel &mdash; the thing OpenRouter can only infer indirectly from price and observed latency <span class="tag hyp">hypothesis</span>.</p>
+    </section>
+
+    <section id="today">
+      <h2><span class="n">07</span> Are we already a single API?</h2>
+      <p class="dek">Checked directly against the app-runara-ai codebase (app.runara.ai) rather than assumed. Short answer: not yet &mdash; but more of the raw material exists than it might seem.</p>
+
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>What exists today <span class="tag fact">fact</span></th><th>What it actually does</th></tr></thead>
+          <tbody>
+            <tr><td style="width:auto; color:var(--fg)"><code>api/playground/chat</code> and <code>api/console/chat</code></td><td style="color:var(--fg)">Per-request proxies: the caller supplies an arbitrary <code>endpoint</code> + <code>apiKey</code> and the route forwards one chat call to it. This is "bring your own model endpoint," not a catalog Runara routes across.</td></tr>
+            <tr><td style="width:auto; color:var(--fg)"><code>api/v1/models</code>, <code>api/v1/deployments</code>, <code>api/v1/workloads</code></td><td style="color:var(--fg)">A REST management API for provisioning and tracking Runara-hosted GPU deployments &mdash; lifecycle management, not a single inference endpoint a harness points at for chat completions.</td></tr>
+            <tr><td style="width:auto; color:var(--fg)"><code>discoverModelApi</code> / <code>chatModelError</code> (<code>_lib/model-endpoint.ts</code>)</td><td style="color:var(--fg)">Already does real model-capability discovery (probes <code>/models</code> and <code>/openapi.json</code>) and OpenAI-compatible error normalization. This is exactly the plumbing a routing layer needs &mdash; it just isn't assembled into one public multi-model endpoint yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>So the honest answer is: <b>no single <code>/v1/chat/completions</code>-style endpoint exists today where a caller sets <code>model</code> and Runara decides which hosted deployment or external provider answers it.</b> What exists is closer to three separate things &mdash; a bring-your-own-endpoint playground, a deployment-management REST API, and a capability-discovery library &mdash; that a single-API product would sit on top of and unify, rather than something built from nothing.</p>
+
+      <div class="callout">
+        <h3>The near-term path, grounded in what's already there</h3>
+        <p>Expose one new endpoint under <code>api/v1/</code> that accepts the same request shape as <code>api/playground/chat</code>, but takes a <code>model</code> name instead of a caller-supplied <code>endpoint</code>. Internally it looks the model up against the optimizer catalog (section 06's "Runara-hosted replicas" branch) or an external-provider passthrough table, reusing <code>discoverModelApi</code>/<code>chatModelError</code> for capability checks and error normalization it already has. The deployment-management API in <code>api/v1/</code> stays exactly as it is &mdash; this would be a new sibling endpoint, not a replacement.</p>
+      </div>
+    </section>
+
+    <section id="proposed">
+      <h2><span class="n">08</span> A proposed architecture</h2>
+      <p class="dek">A single OpenAI-compatible endpoint, the same promise OpenRouter makes, with one structural difference: Runara's own hosted replicas are routed by measured performance, not just advertised price.</p>
+
+      <pre class="mermaid">
+flowchart LR
+    DEV["Developer / harness\nsame OpenAI-compatible\nrequest format"]
+    API["Runara single API"]
+    subgraph RT["Routing decision"]
+        MSEL["Model selection\ncustomer priority list,\ncost/quality target"]
+        PSEL["Provider selection\nexternal providers (pass-through,\nOpenRouter-style failover)\nvs. Runara-hosted replicas"]
+        HSEL["Hardware & engine selection\n(Runara-hosted path only)\ncheapest chip/kernel that\nmeets the SLA -- measured,\nnot advertised"]
+    end
+    EXT["External providers\nOpenAI, Anthropic, DeepSeek, etc.\n(pass-through pricing)"]
+    OWN["Runara-hosted replica pools\n(harness-aware serving control plane)"]
+    DEV --> API --> MSEL --> PSEL
+    PSEL -- "external" --> EXT
+    PSEL -- "Runara-hosted" --> HSEL --> OWN
+      </pre>
+
+      <p>The routing decision OpenRouter already does well &mdash; provider failover, price-weighted selection, uptime exclusion &mdash; applies unchanged to the "external providers" branch. The new branch is the one Runara is uniquely positioned to add: when a request can be served by a Runara-hosted replica, the hardware-and-engine chooser from the Harness-Aware Serving documents picks the cheapest measured configuration, instead of relying on a provider's self-reported price the way a pure aggregator has to.</p>
+
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Capability</th><th>OpenRouter today</th><th>Runara's addition</th></tr></thead>
+          <tbody>
+            <tr><td>Model failover</td><td>Customer priority list, context/moderation/rate-limit triggers</td><td>Same mechanism, reusable as-is</td></tr>
+            <tr><td>Provider failover</td><td>Price-weighted, uptime-excluded, ~25ms overhead</td><td>Same mechanism for external providers; for Runara-hosted replicas, routing is session-aware and cache-aware (section 03 of Harness-Aware Serving), not just price-weighted</td></tr>
+            <tr><td>Cost basis</td><td>Provider's advertised list price</td><td>Measured cost-per-token from Runara's own characterization work, for the Runara-hosted path</td></tr>
+            <tr><td>Discovery / rankings</td><td>Public leaderboard by token share</td><td>Could carry the same flywheel, plus a hardware-efficiency dimension no current leaderboard shows</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h3>What this is not proposing</h3>
+        <p>Not a pivot away from harness-aware serving, and not a commitment to match OpenRouter's catalog breadth on day one. The proposal is additive: expose the existing hardware-choice engine behind a wider, OpenRouter-shaped front door, starting with whichever external providers the team judges worth integrating first.</p>
+      </div>
+    </section>
+
+    <section id="open">
+      <h2><span class="n">09</span> Open questions</h2>
+      <ul>
+        <li><b>Pricing posture.</b> Match OpenRouter's pass-through-plus-toll model directly, or charge differently on the Runara-hosted path where there's a real efficiency advantage to monetize beyond a flat take rate?</li>
+        <li><b>Scope of external providers.</b> Full OpenRouter-style breadth (dozens of providers) from the start, or a narrower set, with the Runara-hosted path as the initial differentiator while the provider catalog grows?</li>
+        <li><b>Whether to publish a leaderboard.</b> OpenRouter's flywheel depends on public rankings; doing the same invites comparison on Runara's own terms (cost-per-token measured, not advertised) but also surfaces the same "revenue vs. volume" tension section 02 found in OpenRouter's own data.</li>
+        <li><b>Build vs. partner on the aggregation layer itself.</b> LiteLLM already provides much of the open-source routing logic OpenRouter is built on; worth deciding whether Runara builds this layer from scratch or integrates with what already exists, the same build-vs-use question the Harness-Aware Serving documents already apply to Dynamo, llm-d and LMCache.</li>
+      </ul>
+    </section>
+
+    <div class="legend">
+      <span><span class="tag fact">fact</span> &mdash; sourced and checkable across multiple independent reports</span>
+      <span><span class="tag reported">reported</span> &mdash; OpenRouter's own figures or a single outlet's figures, not independently re-verified here</span>
+      <span><span class="tag claim">claim</span> &mdash; a third party's benchmark or framing, presented as theirs, not verified first-hand</span>
+      <span><span class="tag hyp">hypothesis</span> &mdash; this document's own working idea, not yet tested</span>
+    </div>
+    <footer>
+      Research sources include TechCrunch, PYMNTS, Yahoo Finance, Dakota, KuCoin, arr.club, getlatka.com, OpenRouter's own blog and docs, Pinggy, markaicode.com, BigGo Finance, tokenmaxxing.com, and Hacker News/LessWrong discussion threads, current as of October 2026. Section 07 checked directly against the app-runara-ai codebase. Drafted for the team to react to and amend.
+    </footer>
+  </main>
+</div>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.16.1/dist/mermaid.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+</body></html>

@@ -1,0 +1,362 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Runara Platform Overview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#f7f5f1; --surface:#ffffff; --border:#e4ded3;
+    --fg:#211d16; --fg-dim:#6b6457;
+    --accent:#b5651d; --accent-fg:#fff8ef;
+    --accent2:#2f6358;
+    --display:'Source Serif 4', Georgia, serif;
+    --body:'IBM Plex Sans', system-ui, sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17140f; --surface:#1f1b14; --border:#332c21;
+      --fg:#efe9dd; --fg-dim:#a89f8e;
+      --accent:#e3974a; --accent-fg:#1a1208;
+      --accent2:#6fae9f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17140f; --surface:#1f1b14; --border:#332c21;
+    --fg:#efe9dd; --fg-dim:#a89f8e;
+    --accent:#e3974a; --accent-fg:#1a1208;
+    --accent2:#6fae9f;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--fg); font-family:var(--body); line-height:1.6; padding-inline:16px}
+  h1,h2,h3{font-family:var(--display); text-wrap:balance; color:var(--fg)}
+  .wrap{max-width:860px; margin:0 auto; padding-block:48px 96px}
+
+  header.doc{margin-bottom:40px}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent)}
+  h1.title{font-size:clamp(28px,4vw,38px); margin:10px 0 10px; font-weight:700}
+  .thesis{font-size:17px; color:var(--fg-dim); font-style:italic; margin:0; max-width:62ch}
+
+  section{margin-bottom:44px}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:28px 30px}
+  @media (max-width:560px){ .card{padding:20px} }
+  .card + .card{margin-top:28px}
+
+  .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:4px; flex-wrap:wrap}
+  .sec-head h2{font-size:22px; margin:0}
+  .sec-head .n{font-family:var(--mono); color:var(--accent); font-size:14px}
+  .dek{color:var(--fg-dim); margin:0 0 18px; max-width:60ch; font-size:14.5px}
+
+  ol.points{margin:0 0 18px; padding-left:0; list-style:none; counter-reset:pt}
+  ol.points li{counter-increment:pt; display:grid; grid-template-columns:28px 1fr; gap:10px; margin-bottom:14px; max-width:none}
+  ol.points li::before{content:counter(pt); grid-column:1; font-family:var(--mono); font-size:12px; color:var(--accent); font-weight:600; line-height:1.6}
+  ol.points li b{grid-column:2; display:block; margin-bottom:2px; min-width:0}
+  ol.points li p{grid-column:2; margin:0; font-size:14px; color:var(--fg-dim); max-width:none; min-width:0}
+
+  .subhead{font-size:13px; font-family:var(--mono); letter-spacing:.04em; text-transform:uppercase; color:var(--accent2); margin:24px 0 10px; padding-top:18px; border-top:1px solid var(--border)}
+
+  .link-out{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:13px; color:var(--accent); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:9px 14px; margin-top:4px}
+  .link-out:hover{border-color:var(--accent)}
+  .link-out .arrow{transition:transform .15s}
+  .link-out:hover .arrow{transform:translateX(3px)}
+
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin:14px 0 18px}
+  .stat{background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 12px}
+  .stat b{display:block; font-family:var(--mono); font-size:19px; color:var(--accent); font-variant-numeric:tabular-nums}
+  .stat span{font-size:11px; color:var(--fg-dim)}
+
+  .legend{display:flex; flex-wrap:wrap; gap:8px 20px; font-size:12.5px; color:var(--fg-dim); margin:0 0 16px}
+  .legend span{display:inline-flex; align-items:center; gap:8px}
+  .legend i{display:inline-block; width:22px; height:12px; border-radius:3px; border:1.5px solid var(--border)}
+  .legend .l-live{border-color:var(--accent2); background:var(--accent2)}
+  .legend .l-build{border-color:var(--accent); background:var(--accent)}
+  .legend .l-prop{border:1.5px dashed var(--fg-dim)}
+
+  .stack{display:grid; gap:12px; margin:0 0 20px}
+  .layer{display:grid; grid-template-columns:92px 1fr; gap:14px; align-items:start}
+  .lname{font-family:var(--mono); font-size:11px; color:var(--fg-dim); padding-top:10px; border-top:1px solid var(--border)}
+  .lrow{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px}
+  .blk{border:1.5px solid var(--border); border-radius:8px; padding:12px 14px; background:var(--bg); min-width:0}
+  .blk b{display:block; font-size:13.5px; margin-bottom:3px}
+  .blk p{margin:0; font-size:12.5px; color:var(--fg-dim); line-height:1.5}
+  .blk .tag{display:inline-block; font-family:var(--mono); font-size:10.5px; margin-top:9px; padding:1px 8px; border-radius:999px}
+  .blk.wide{grid-column:1 / -1}
+  .blk.live{border-color:var(--accent2)} .blk.live .tag{background:var(--accent2); color:var(--surface)}
+  .blk.build{border-color:var(--accent)} .blk.build .tag{background:var(--accent); color:var(--accent-fg)}
+  .blk.prop{border-style:dashed; border-color:var(--fg-dim)} .blk.prop .tag{border:1px dashed var(--fg-dim); color:var(--fg-dim)}
+  @media (max-width:620px){ .layer{grid-template-columns:1fr; gap:6px} }
+
+  .arch{overflow-x:auto; border:1px solid var(--border); border-radius:8px; background:var(--bg); padding:10px}
+  .arch svg{display:block; width:100%; min-width:700px; height:auto}
+  .arch text{font-family:var(--body)}
+  .a-live{fill:var(--surface); stroke:var(--accent2); stroke-width:1.6}
+  .a-build{fill:var(--surface); stroke:var(--accent); stroke-width:1.6}
+  .a-prop{fill:var(--bg); stroke:var(--fg-dim); stroke-width:1.4; stroke-dasharray:6 4}
+  .a-cp{fill:var(--accent2)}
+  .a-cont{fill:none; stroke:var(--border); stroke-width:1.2}
+  .a-t{fill:var(--fg); font-weight:600}
+  .a-d{fill:var(--fg-dim)}
+  .a-cpt{fill:var(--surface)}
+  .a-line{stroke:var(--fg-dim); stroke-width:1.5; fill:none}
+  .a-dep{stroke:var(--accent); stroke-width:1.6; stroke-dasharray:5 4; fill:none}
+  .a-lbl{fill:var(--fg-dim); font-family:var(--mono); font-size:10px}
+  .a-badge rect{fill:var(--bg); stroke:var(--border)}
+  .a-badge text{fill:var(--fg-dim); font-family:var(--mono); font-size:10px}
+  .flows{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin:20px 0 18px}
+  .flows h3{font-size:15px; margin:0 0 8px}
+  .flows ol{margin:0; padding-left:20px; font-size:13.5px; color:var(--fg-dim)}
+  .flows li{margin-bottom:6px}
+
+  footer{font-size:12px; color:var(--fg-dim); border-top:1px solid var(--border); padding-top:18px; margin-top:8px}
+</style>
+
+<div class="wrap">
+  <header class="doc">
+    <div class="eyebrow">Summary &middot; three threads, one product</div>
+    <h1 class="title">Runara Platform Overview</h1>
+    <p class="thesis">A short digest of three linked threads &mdash; how Runara serves harness traffic, whether "one API for every model" is a business we should build next to it, and the scale-out plan that gives both more clouds and real autoscaling. The last section puts every piece in one picture; full detail lives in the linked briefs.</p>
+  </header>
+
+  <section>
+    <div class="card">
+      <div class="sec-head"><span class="n">01</span><h2>Harness-Aware Serving</h2></div>
+      <p class="dek">The product we're already building: a control plane that picks the cheapest hardware for a model, then serves harness traffic on it without redoing work already done.</p>
+
+      <ol class="points">
+        <li><b>Two decisions, not one.</b><p>The control plane chooses <i>which hardware</i> runs a model (cheapest chip/engine that meets the SLA) and separately runs <i>harness-aware serving</i> on top of it &mdash; session-aware routing, cache placement, burst-aware autoscaling. Most competitors only do one of these.</p></li>
+        <li><b>The traffic is almost entirely cached prefill.</b><p>Agent sessions run ~43 median turns, ~142K median input tokens, and a &gt;96% observed prefix-cache hit rate. Software alone (cache-aware serving) moved revenue per gigawatt 1.8&ndash;2.7&times; on identical hardware in a published benchmark.</p></li>
+        <li><b>v3 added two more harnesses, same thesis each time.</b><p>Fine-tuning gets its own profiler (forward/backward/optimizer time & memory, LoRA/QLoRA, parallelism choice); RL rollouts get an architecture showing where rollout generation meets the training step. Both are "pick the cheapest hardware for this workload shape," one layer removed from inference.</p></li>
+        <li><b>Staffing was sized generously, not leanly.</b><p>~20 engineers across all three streams plus cross-cutting roles (DevOps/Kubernetes, security/compliance for BYOC, a technical PM) &mdash; sized so a lean first hire isn't mistaken for the ceiling.</p></li>
+        <li><b>Neutrality is the current moat.</b><p>An OpenAI-compatible API means any harness switches to Runara by changing one base URL, and Runara doesn't compete with the harnesses it serves &mdash; today. Whether to grow into the harness later is still an open team decision.</p></li>
+      </ol>
+
+      <a class="link-out" href="harness-aware-serving-v3.html">Full brief &mdash; Harness-Aware Serving v3 <span class="arrow">&rarr;</span></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <div class="sec-head"><span class="n">02</span><h2>OpenRouter, and our single-API question</h2></div>
+      <p class="dek">The clearest existing proof that routing between models is itself a fundable, acquirable business &mdash; and what we found when we checked whether Runara is already one.</p>
+
+      <ol class="points">
+        <li><b>The sharpest insight is in its own data.</b><p>Anthropic captures ~46% of platform revenue on only ~12% of token volume &mdash; premium models monetize far above their traffic share; cheap open models drive the volume the public leaderboard advertises.</p></li>
+        <li><b>Six decisions built the moat.</b><p>Pass-through pricing, fast new-model integration, privacy as a feature (not a footnote), a public leaderboard flywheel, generous BYOK, and catalog breadth across both US and Chinese labs.</p></li>
+        <li><b>Real, named risks.</b><p>A thin take rate that open-source LiteLLM can undercut for free, standing provider-disintermediation risk, and the sharpest critique: the better it commoditizes model choice, the less valuable that commoditization becomes over time.</p></li>
+      </ol>
+
+      <div class="subhead">Are we already a single API? &mdash; checked, not assumed</div>
+      <ol class="points">
+        <li><b>Short answer: not yet.</b><p>No endpoint exists today where a caller sets <code>model</code> and Runara decides which hosted deployment or external provider answers it.</p></li>
+        <li><b>What exists instead.</b><p><code>playground/chat</code> and <code>console/chat</code> are bring-your-own-endpoint proxies (caller supplies the <code>endpoint</code>); <code>api/v1/models</code>/<code>deployments</code>/<code>workloads</code> is a deployment-management REST API &mdash; neither is a model-routed single endpoint.</p></li>
+        <li><b>The raw material is already there.</b><p><code>discoverModelApi</code>/<code>chatModelError</code> already do model-capability discovery and OpenAI-compatible error normalization &mdash; exactly the plumbing a router needs, just not assembled into one public endpoint yet.</p></li>
+        <li><b>The near-term path is additive.</b><p>One new endpoint, same shape as <code>playground/chat</code> but keyed on <code>model</code> instead of <code>endpoint</code>, routing to the optimizer catalog (Runara-hosted) or a provider passthrough table &mdash; not a pivot away from harness-aware serving.</p></li>
+        <li><b>The differentiator if we build it.</b><p>Runara-hosted replicas become "one more provider" in an OpenRouter-style table, except routed by <i>measured</i> cost-per-token from our own characterization work, not a provider's advertised list price.</p></li>
+      </ol>
+
+      <a class="link-out" href="one-api-every-model.html">Full brief &mdash; One API, Every Model <span class="arrow">&rarr;</span></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <div class="sec-head"><span class="n">03</span><h2>The whole product, one picture</h2></div>
+      <p class="dek">Every piece from the sections above and the scale-out roadmap, stacked from the people who call Runara down to the machines that answer. Each block says where it stands today.</p>
+
+      <div class="legend">
+        <span><i class="l-live"></i>Live today</span>
+        <span><i class="l-build"></i>In build or on the roadmap</span>
+        <span><i class="l-prop"></i>Proposed, not started</span>
+      </div>
+
+      <div class="stack">
+        <div class="layer">
+          <div class="lname">Callers</div>
+          <div class="lrow">
+            <div class="blk live wide"><b>Agent harnesses and apps</b><p>Any OpenAI-compatible client. Switching to Runara means changing one base URL, and Runara doesn&rsquo;t compete with the harnesses it serves.</p><span class="tag">Live today</span></div>
+          </div>
+        </div>
+
+        <div class="layer">
+          <div class="lname">Front doors</div>
+          <div class="lrow">
+            <div class="blk prop"><b>Single API</b><p>The caller sets <code>model</code>; Runara picks the hosted deployment or external provider. One new endpoint, next to <code>playground/chat</code>.</p><span class="tag">Proposed</span></div>
+            <div class="blk build"><b>Serverless gateway</b><p>One gateway for <code>rk_live_</code> keys, queueing, warm replicas and Stripe usage metering. Replaces the auth proxy on each box.</p><span class="tag">Roadmap</span></div>
+            <div class="blk live"><b>Product tabs</b><p>Analyzer, Deployments and Evaluate. All three deploy through one pipeline.</p><span class="tag">Live today</span></div>
+          </div>
+        </div>
+
+        <div class="layer">
+          <div class="lname">Control plane</div>
+          <div class="lrow">
+            <div class="blk live wide"><b>runara.ai</b><p>Convex + Next.js. Billing, API keys and the Analyzer. Convex stays the source of truth for every cluster and deployment.</p><span class="tag">Live today</span></div>
+            <div class="blk live"><b>Hardware choice</b><p>Cheapest chip and engine that meets the SLA, recommended by the Analyzer.</p><span class="tag">Live today</span></div>
+            <div class="blk build"><b>Harness-aware serving</b><p>Session-aware routing, cache placement and burst-aware autoscaling on top of the chosen hardware.</p><span class="tag">In build</span></div>
+            <div class="blk build"><b>Workload profilers</b><p>Inference, fine-tuning and RL rollouts: pick the cheapest hardware for each workload shape.</p><span class="tag">In build</span></div>
+          </div>
+        </div>
+
+        <div class="layer">
+          <div class="lname">Scaling</div>
+          <div class="lrow">
+            <div class="blk build"><b>Kubernetes autoscaling</b><p>Replica scaling on vLLM queue depth and KV cache, GPU node autoscaling, and a Runara agent in each cluster.</p><span class="tag">Roadmap</span></div>
+            <div class="blk build"><b>VM autoscaler</b><p>For Vast, RunPod and Lambda, which have no managed Kubernetes. Reuses the AWS warm-pool pattern.</p><span class="tag">Roadmap</span></div>
+          </div>
+        </div>
+
+        <div class="layer">
+          <div class="lname">Compute</div>
+          <div class="lrow">
+            <div class="blk live"><b>Runara-hosted replicas</b><p>Eight clouds today, twelve after the roadmap adds Vultr, DigitalOcean, CoreWeave and Oracle OCI.</p><span class="tag">Live, growing</span></div>
+            <div class="blk live"><b>BYOC in customer accounts</b><p>Six clouds today. The four new clouds each get an adapter, credentials, a GPU image and Analyzer support.</p><span class="tag">Live, growing</span></div>
+            <div class="blk prop"><b>External providers</b><p>A passthrough table so the single API can route to other providers beside Runara-hosted replicas.</p><span class="tag">Proposed</span></div>
+          </div>
+        </div>
+      </div>
+
+      <a class="link-out" href="runara-scale-out-roadmap.html">Full roadmap &mdash; Scale-Out, Nov 2026 &ndash; Apr 2027 <span class="arrow">&rarr;</span></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <div class="sec-head"><span class="n">04</span><h2>Product architecture, everything combined</h2></div>
+      <p class="dek">Sections 01&ndash;03 as one system. Requests travel down the left side, deploys and policy travel down the right, and every answer comes from the compute layer at the bottom.</p>
+
+      <div class="legend">
+        <span><i class="l-live"></i>Live today</span>
+        <span><i class="l-build"></i>In build or on the roadmap</span>
+        <span><i class="l-prop"></i>Proposed, not started</span>
+        <span>Badges: 01 harness-aware serving &middot; 02 single API &middot; 03 scale-out</span>
+      </div>
+
+      <div class="arch">
+        <svg viewBox="0 0 900 590" role="img" aria-label="Architecture diagram. Agent harnesses call the single API or the serverless gateway, which feed harness-aware serving and then compute: external providers, Runara-hosted replicas and BYOC clusters. Product tabs deploy through runara.ai, the control plane, which sets autoscaling policy for the compute layer; in-cluster agents report state back to runara.ai.">
+          <defs>
+            <marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--fg-dim)"/></marker>
+            <marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--accent)"/></marker>
+          </defs>
+
+          <!-- callers and tabs -->
+          <rect x="130" y="16" width="320" height="52" rx="8" class="a-live"/>
+          <text x="290" y="38" text-anchor="middle" class="a-t" font-size="13.5">Agent harnesses &amp; apps</text>
+          <text x="290" y="56" text-anchor="middle" class="a-d" font-size="11.5">Any OpenAI-compatible client &middot; one base URL</text>
+
+          <rect x="620" y="16" width="260" height="52" rx="8" class="a-live"/>
+          <text x="750" y="38" text-anchor="middle" class="a-t" font-size="13.5">Product tabs</text>
+          <text x="750" y="56" text-anchor="middle" class="a-d" font-size="11.5">Analyzer &middot; Deployments &middot; Evaluate</text>
+
+          <path d="M290 68V88H160V108" class="a-line" marker-end="url(#m1)"/>
+          <path d="M290 88H420V108" class="a-line" marker-end="url(#m1)"/>
+          <path d="M750 68V108" class="a-line" marker-end="url(#m1)"/>
+          <text x="760" y="92" class="a-lbl">one deploy pipeline</text>
+
+          <!-- front doors -->
+          <rect x="40" y="110" width="240" height="70" rx="8" class="a-prop"/>
+          <text x="56" y="136" class="a-t" font-size="13.5">Single API</text>
+          <text x="56" y="154" class="a-d" font-size="11.5">Caller sets the model; Runara picks</text>
+          <text x="56" y="170" class="a-d" font-size="11.5">the deployment or provider</text>
+          <g class="a-badge"><rect x="246" y="118" width="26" height="16" rx="8"/><text x="259" y="130" text-anchor="middle">02</text></g>
+
+          <rect x="300" y="110" width="240" height="70" rx="8" class="a-build"/>
+          <text x="316" y="136" class="a-t" font-size="13.5">Serverless gateway</text>
+          <text x="316" y="154" class="a-d" font-size="11.5">rk_live_ keys &middot; queueing &middot; warm</text>
+          <text x="316" y="170" class="a-d" font-size="11.5">replicas &middot; Stripe metering</text>
+          <g class="a-badge"><rect x="506" y="118" width="26" height="16" rx="8"/><text x="519" y="130" text-anchor="middle">03</text></g>
+
+          <path d="M540 150H596" class="a-line" marker-end="url(#m1)"/>
+          <text x="568" y="142" text-anchor="middle" class="a-lbl" font-size="9">keys, usage</text>
+
+          <!-- control plane -->
+          <rect x="600" y="110" width="280" height="150" rx="10" class="a-cp"/>
+          <text x="618" y="138" class="a-cpt" font-size="20" font-weight="700" style="font-family:var(--display)">runara.ai</text>
+          <text x="618" y="158" class="a-cpt" font-size="11.5" opacity=".85">Control plane &middot; Convex + Next.js</text>
+          <g class="a-cpt" font-size="11.5">
+            <text x="618" y="184">&bull; Hardware choice from the Analyzer</text>
+            <text x="618" y="202">&bull; Billing, API keys, usage metering</text>
+            <text x="618" y="220">&bull; Profilers: inference, fine-tune, RL</text>
+            <text x="618" y="238">&bull; Source of truth for every cluster</text>
+          </g>
+
+          <!-- harness-aware serving -->
+          <path d="M160 180V213" class="a-line" marker-end="url(#m1)"/>
+          <path d="M420 180V213" class="a-line" marker-end="url(#m1)"/>
+          <rect x="40" y="215" width="500" height="84" rx="8" class="a-build"/>
+          <text x="56" y="241" class="a-t" font-size="14">Harness-aware serving</text>
+          <text x="56" y="260" class="a-d" font-size="11.5">Session-aware routing &middot; cache placement &middot; burst-aware autoscaling</text>
+          <text x="56" y="278" class="a-d" font-size="11">Agent traffic is almost all cached prefill (&gt;96% prefix-cache hit)</text>
+          <g class="a-badge"><rect x="506" y="223" width="26" height="16" rx="8"/><text x="519" y="235" text-anchor="middle">01</text></g>
+
+          <!-- autoscaling -->
+          <path d="M720 260V288" class="a-line" marker-end="url(#m1)"/>
+          <text x="730" y="278" class="a-lbl">policy</text>
+          <rect x="600" y="290" width="240" height="100" rx="8" class="a-build"/>
+          <text x="616" y="314" class="a-t" font-size="14">Autoscaling</text>
+          <text x="616" y="334" class="a-d" font-size="11.5">Kubernetes: replicas and GPU nodes</text>
+          <text x="616" y="351" class="a-d" font-size="11.5">VM autoscaler: Vast, RunPod, Lambda</text>
+          <text x="616" y="368" class="a-d" font-size="11.5">In-cluster agent reports to Convex</text>
+          <g class="a-badge"><rect x="806" y="298" width="26" height="16" rx="8"/><text x="819" y="310" text-anchor="middle">03</text></g>
+
+          <!-- paths into compute -->
+          <path d="M290 299V428" class="a-line" marker-end="url(#m1)"/>
+          <text x="300" y="370" class="a-lbl">request path</text>
+          <path d="M720 390V428" class="a-dep" marker-end="url(#m2)"/>
+          <text x="730" y="414" class="a-lbl">scales replicas</text>
+          <path d="M856 500H866V262" class="a-line" stroke-dasharray="5 4" marker-end="url(#m1)"/>
+          <text transform="rotate(-90 887 380)" x="887" y="380" text-anchor="middle" class="a-lbl">state reported back</text>
+
+          <!-- compute -->
+          <rect x="20" y="430" width="836" height="146" rx="12" class="a-cont"/>
+          <text x="36" y="452" class="a-lbl" font-size="11">Compute: where requests are answered</text>
+
+          <rect x="36" y="466" width="230" height="92" rx="8" class="a-prop"/>
+          <text x="52" y="490" class="a-t" font-size="13.5">External providers</text>
+          <text x="52" y="510" class="a-d" font-size="11.5">Passthrough table so the single</text>
+          <text x="52" y="526" class="a-d" font-size="11.5">API can route beyond our replicas</text>
+          <g class="a-badge"><rect x="232" y="474" width="26" height="16" rx="8"/><text x="245" y="486" text-anchor="middle">02</text></g>
+
+          <rect x="282" y="466" width="270" height="92" rx="8" class="a-live"/>
+          <text x="298" y="490" class="a-t" font-size="13.5">Runara-hosted replicas</text>
+          <text x="298" y="510" class="a-d" font-size="11.5">8 clouds today, 12 after the roadmap:</text>
+          <text x="298" y="526" class="a-d" font-size="11.5">Vultr, DigitalOcean, CoreWeave, OCI</text>
+          <g class="a-badge"><rect x="518" y="474" width="26" height="16" rx="8"/><text x="531" y="486" text-anchor="middle">03</text></g>
+
+          <rect x="568" y="466" width="272" height="92" rx="8" class="a-live"/>
+          <text x="584" y="490" class="a-t" font-size="13.5">BYOC in customer accounts</text>
+          <text x="584" y="510" class="a-d" font-size="11.5">6 clouds today; four new adapters</text>
+          <text x="584" y="526" class="a-d" font-size="11.5">with credentials, image, Analyzer</text>
+          <g class="a-badge"><rect x="806" y="474" width="26" height="16" rx="8"/><text x="819" y="486" text-anchor="middle">03</text></g>
+        </svg>
+      </div>
+
+      <div class="flows">
+        <div>
+          <h3>How a request travels</h3>
+          <ol>
+            <li>A harness calls the single API or the serverless gateway with its key.</li>
+            <li>The gateway checks the key, queues the request and meters usage into Stripe.</li>
+            <li>Harness-aware serving routes it to the replica that already holds the session&rsquo;s cache.</li>
+            <li>A hosted replica, a BYOC replica or an external provider answers.</li>
+          </ol>
+        </div>
+        <div>
+          <h3>How a deploy travels</h3>
+          <ol>
+            <li>A tab hands the deploy to one pipeline.</li>
+            <li>runara.ai picks the cheapest hardware that meets the SLA.</li>
+            <li>The autoscaler creates the cluster or VM pool and sets min and max replicas.</li>
+            <li>The in-cluster agent reports state back, and Convex stays the source of truth.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Digest only &mdash; figures, sourcing and tagging (fact/reported/claim/hypothesis) live in the linked briefs. Drafted for the team to react to in five minutes before reading either in full.
+  </footer>
+</div>
+
+</body></html>
