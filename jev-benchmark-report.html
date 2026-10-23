@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Jev Benchmark Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#f7f5f1;--surface:#fff;--border:#e4ded3;--fg:#211d16;--fg-dim:#6b6457;--accent:#b5651d;--off:#3d5a8a;--un:#b5651d;--bad:#a8402b;--ok:#2f6b52;--display:'Source Serif 4',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17140f;--surface:#1f1b14;--border:#332c21;--fg:#efe9dd;--fg-dim:#a89f8e;--accent:#e3974a;--off:#8fa6e0;--un:#e3974a;--bad:#e8826b;--ok:#6fc19e;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.65 var(--body);padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:880px;margin:0 auto;padding-block:56px 96px}
+.eyebrow{font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 clamp(28px,4vw,40px)/1.15 var(--display);margin:10px 0 12px;text-wrap:balance}
+h2{font:700 24px var(--display);margin:56px 0 6px;text-wrap:balance}
+h2 .n{font:500 12px var(--mono);color:var(--accent);display:block;letter-spacing:.1em;margin-bottom:4px}
+h3{font:600 15px var(--body);margin:28px 0 8px}
+p{max-width:68ch;margin:8px 0} .lead{color:var(--fg-dim);font-size:16px;max-width:64ch}
+.meta{font:12px var(--mono);color:var(--fg-dim);margin-top:14px}
+.site-home{position:fixed;top:14px;right:16px;z-index:10;font:12px var(--mono);color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:6px;padding:7px 12px;background:var(--surface)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:24px 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;min-width:0}
+.card .k{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg-dim)}
+.card .v{font:700 26px var(--display);margin-top:4px} .card .s{font-size:13px;color:var(--fg-dim)}
+.kv{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin:14px 0}
+.kv div{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:10px 16px;border-top:1px solid var(--border)} .kv div:first-child{border-top:0}
+.kv b{font-weight:500;color:var(--fg-dim);font-size:13px} .kv span{min-width:0;overflow-wrap:anywhere}
+code{font:13px var(--mono);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+.scroll{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface);margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px} th,td{padding:9px 12px;text-align:left;border-top:1px solid var(--border);white-space:nowrap}
+th{border-top:0;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fg-dim)} .num{text-align:right;font-variant-numeric:tabular-nums}
+.neg{color:var(--bad);font-weight:600} .ns{color:var(--fg-dim)}
+.legend{display:flex;gap:18px;font-size:13px;margin:12px 0 6px;flex-wrap:wrap} .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.o{color:var(--off)} i.o{background:var(--off)} .u{color:var(--un)} i.u{background:var(--un)}
+.bar{display:grid;grid-template-columns:150px 1fr 90px;gap:12px;align-items:center;margin:10px 0;font-size:13.5px}
+.bt{display:flex;flex-direction:column;gap:3px;min-width:0} .bt i{display:block;height:9px;border-radius:2px}
+.bv{font:12px var(--mono);text-align:right}
+.call{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:12px 16px;margin:16px 0;max-width:72ch}
+ul{padding-left:20px;max-width:68ch} li{margin:4px 0}
+footer{font-size:12px;color:var(--fg-dim);border-top:1px solid var(--border);padding-top:18px;margin-top:56px}
+@media (max-width:560px){.bar{grid-template-columns:1fr 80px}.bl{grid-column:1/-1}.kv div{grid-template-columns:1fr;gap:2px}}
+</style></head><body>
+<a class="site-home" href="index.html">&larr; Home</a>
+<div class="wrap">
+<div class="eyebrow">Runara &middot; benchmark report</div>
+<h1>Jev vs an open Jev clone: accuracy benchmark</h1>
+<p class="lead">We benchmarked TypeSafe's hosted Jev model, then self-hosted an open-weights Jev-style model on one H100 and ran the identical test on it. The clone matches Jev on simple classification but is 8 to 10 points behind on knowledge and reasoning.</p>
+<div class="meta">October 23, 2026 &middot; same questions, same settings (seed 0) for both models &middot; 7 shared tasks, 24,173 questions each</div>
+
+<div class="cards">
+<div class="card"><div class="k">Official</div><div class="v">91.6%</div><div class="s">MMLU, Jev 1.14</div></div>
+<div class="card"><div class="k">Unofficial</div><div class="v">83.4%</div><div class="s">MMLU, JEV-27B</div></div>
+<div class="card"><div class="k">Largest gap</div><div class="v">−10.3</div><div class="s">points, TruthfulQA</div></div>
+<div class="card"><div class="k">No real gap on</div><div class="v">2 of 7</div><div class="s">tasks within noise (ARC, SST-2)</div></div>
+</div>
+
+<h2><span class="n">01</span>What we measured</h2>
+<p>Jev is a decisions model. It does not write text. It receives some context and a structured question (pick one option, answer yes/no, or rate on a scale) and returns probabilities. We therefore measure accuracy from its chosen answer, and how well its confidence matches reality from the probabilities.</p>
+<div class="scroll"><table><tr><th>Task</th><th>What it tests</th><th>Question type</th><th class="num">Questions</th></tr>
+<tr><td>MMLU</td><td>Knowledge across 57 subjects</td><td>choice</td><td class="num">14,042</td></tr>
+<tr><td>TruthfulQA</td><td>Resisting common misconceptions</td><td>choice</td><td class="num">817</td></tr>
+<tr><td>ARC Challenge</td><td>Grade-school science reasoning</td><td>choice</td><td class="num">1,172</td></tr>
+<tr><td>BoolQ</td><td>Yes/no reading comprehension</td><td>yes/no</td><td class="num">3,270</td></tr>
+<tr><td>SST-2</td><td>Sentiment</td><td>choice</td><td class="num">872</td></tr>
+<tr><td>Yelp stars</td><td>Rate a review 1 to 5 (exact match)</td><td>score</td><td class="num">2,000</td></tr>
+<tr><td>MMLU position test</td><td>500 MMLU questions, each asked 4 times with the options reordered</td><td>choice</td><td class="num">2,000</td></tr>
+<tr><td>ScienceQA (images)</td><td>Questions about a picture. Official model only.</td><td>choice</td><td class="num">500</td></tr></table></div>
+<p>All datasets are used in full (Yelp capped at 2,000, the position test at 500 questions). Both models received identical questions with seed 0. Accuracy intervals are 95% Wilson intervals.</p>
+
+<h2><span class="n">02</span>Official model: TypeSafe Jev</h2>
+<div class="kv">
+<div><b>Model</b><span><code>typesafe/jev-1.14</code>, served as <code>typesafe/jev-1.14-20261014</code></span></div>
+<div><b>Access</b><span>OpenRouter decisions endpoint (<code>/api/alpha/decisions</code>), hosted by TypeSafe</span></div>
+<div><b>Run</b><span>24,673 requests, 0 errors, about $0.46 total</span></div>
+<div><b>Inputs</b><span>Text and images (the only model here that handles images)</span></div>
+</div>
+<div class="scroll"><table><tr><th>Task</th><th class="num">n</th><th class="num">Accuracy %</th><th class="num">95% CI</th><th class="num">Mean confidence %</th><th class="num">Calibration error %</th><th class="num">Log-loss</th></tr>
+<tr><td>MMLU</td><td class="num">14,042</td><td class="num">91.6</td><td class="num">[91.1, 92.0]</td><td class="num">92.5</td><td class="num">1.7</td><td class="num">0.322</td></tr><tr><td>ARC Challenge</td><td class="num">1,172</td><td class="num">97.7</td><td class="num">[96.7, 98.4]</td><td class="num">98.1</td><td class="num">0.7</td><td class="num">0.105</td></tr><tr><td>TruthfulQA</td><td class="num">817</td><td class="num">88.9</td><td class="num">[86.5, 90.8]</td><td class="num">87.9</td><td class="num">3.8</td><td class="num">0.396</td></tr><tr><td>SST-2</td><td class="num">872</td><td class="num">96.4</td><td class="num">[95.0, 97.5]</td><td class="num">96.8</td><td class="num">1.0</td><td class="num">0.117</td></tr><tr><td>BoolQ</td><td class="num">3,270</td><td class="num">91.3</td><td class="num">[90.3, 92.3]</td><td class="num">90.4</td><td class="num">1.7</td><td class="num">0.225</td></tr><tr><td>Yelp stars</td><td class="num">2,000</td><td class="num">68.8</td><td class="num">[66.7, 70.8]</td><td class="num">77.8</td><td class="num">9.5</td><td class="num">0.746</td></tr><tr><td>ScienceQA (images)</td><td class="num">500</td><td class="num">99.2</td><td class="num">[98.0, 99.7]</td><td class="num">98.2</td><td class="num">1.2</td><td class="num">0.025</td></tr><tr><td>MMLU position test</td><td class="num">2,000</td><td class="num">92.2</td><td class="num">[90.9, 93.3]</td><td class="num">92.8</td><td class="num">2.6</td><td class="num">0.317</td></tr></table></div>
+<p>Jev is accurate and well calibrated: its stated confidence is within about 1 to 4 points of its real accuracy on most tasks. The exception is Yelp stars, where it is overconfident by 9 points (it is right 68.8% of the time but 77.8% sure). On ratings it is off by 0.34 stars on average, and 97.9% of its answers are within one star. When the options were reordered, it gave the same answer 96.6% of the time.</p>
+
+<h2><span class="n">03</span>Unofficial model: autotrust/JEV-27B</h2>
+<p>TypeSafe has not released Jev's weights. We chose <a href="https://huggingface.co/autotrust/JEV-27B" style="color:var(--accent)">autotrust/JEV-27B</a> because it is the closest open replica we found: a third-party model, explicitly not affiliated with TypeSafe, distilled from hosted Jev 1.13 and built to output the same three answer types.</p>
+<div class="kv">
+<div><b>Model</b><span><code>autotrust/JEV-27B</code> (Apache-2.0). Qwen 27B backbone with a LoRA decision head.</span></div>
+<div><b>GPU</b><span>1× NVIDIA H100 80GB HBM3 (Vast.ai), driver 610.57.04, CUDA 13</span></div>
+<div><b>Precision</b><span>bf16, no quantization</span></div>
+<div><b>Serving</b><span>vLLM 0.32.0 with the model's <code>serve_decide.py</code>; <code>--max-model-len 32768</code>, 256 concurrent sequences</span></div>
+<div><b>Adapter</b><span>A thin FastAPI shim translates our decisions request into the model's native <code>/v1/decide</code> format. It passed our format check (5 of 5).</span></div>
+<div><b>Run</b><span>24,173 requests, 0 errors, about 9.7 minutes (about 48 requests/s, 16 concurrent)</span></div>
+<div><b>Not run</b><span>ScienceQA images. This model is text only.</span></div>
+</div>
+<div class="scroll"><table><tr><th>Task</th><th class="num">n</th><th class="num">Accuracy %</th><th class="num">95% CI</th><th class="num">Mean confidence %</th><th class="num">Calibration error %</th><th class="num">Log-loss</th></tr>
+<tr><td>MMLU</td><td class="num">14,042</td><td class="num">83.4</td><td class="num">[82.8, 84.0]</td><td class="num">82.2</td><td class="num">2.0</td><td class="num">0.472</td></tr><tr><td>ARC Challenge</td><td class="num">1,172</td><td class="num">97.1</td><td class="num">[96.0, 97.9]</td><td class="num">94.6</td><td class="num">2.6</td><td class="num">0.114</td></tr><tr><td>TruthfulQA</td><td class="num">817</td><td class="num">78.6</td><td class="num">[75.6, 81.3]</td><td class="num">75.9</td><td class="num">4.7</td><td class="num">0.625</td></tr><tr><td>SST-2</td><td class="num">872</td><td class="num">95.8</td><td class="num">[94.2, 96.9]</td><td class="num">96.2</td><td class="num">0.9</td><td class="num">0.120</td></tr><tr><td>BoolQ</td><td class="num">3,270</td><td class="num">89.0</td><td class="num">[87.8, 90.0]</td><td class="num">89.5</td><td class="num">1.1</td><td class="num">0.292</td></tr><tr><td>Yelp stars</td><td class="num">2,000</td><td class="num">67.2</td><td class="num">[65.1, 69.2]</td><td class="num">74.4</td><td class="num">9.0</td><td class="num">0.797</td></tr><tr><td>MMLU position test</td><td class="num">2,000</td><td class="num">82.0</td><td class="num">[80.3, 83.6]</td><td class="num">82.5</td><td class="num">1.7</td><td class="num">0.509</td></tr></table></div>
+<p>Calibration is similar to the official model (errors of 1 to 5 points), so it knows roughly how sure it should be. It is also overconfident on Yelp stars (9 points). Where it differs is position stability: reordering the options changed its answer 13.2% of the time, against 3.4% for official Jev.</p>
+
+<h2><span class="n">04</span>Comparison</h2>
+<div class="legend"><span><i class="o"></i>Official Jev 1.14</span><span><i class="u"></i>JEV-27B</span></div>
+<div class="bar"><div class="bl">MMLU</div><div class="bt"><i class="o" style="width:91.6%"></i><i class="u" style="width:83.4%"></i></div><div class="bv"><span class="o">91.6</span> / <span class="u">83.4</span></div></div>
+<div class="bar"><div class="bl">TruthfulQA</div><div class="bt"><i class="o" style="width:88.9%"></i><i class="u" style="width:78.6%"></i></div><div class="bv"><span class="o">88.9</span> / <span class="u">78.6</span></div></div>
+<div class="bar"><div class="bl">MMLU position test</div><div class="bt"><i class="o" style="width:92.2%"></i><i class="u" style="width:82.0%"></i></div><div class="bv"><span class="o">92.2</span> / <span class="u">82.0</span></div></div>
+<div class="bar"><div class="bl">BoolQ</div><div class="bt"><i class="o" style="width:91.3%"></i><i class="u" style="width:89.0%"></i></div><div class="bv"><span class="o">91.3</span> / <span class="u">89.0</span></div></div>
+<div class="bar"><div class="bl">ARC Challenge</div><div class="bt"><i class="o" style="width:97.7%"></i><i class="u" style="width:97.1%"></i></div><div class="bv"><span class="o">97.7</span> / <span class="u">97.1</span></div></div>
+<div class="bar"><div class="bl">SST-2</div><div class="bt"><i class="o" style="width:96.4%"></i><i class="u" style="width:95.8%"></i></div><div class="bv"><span class="o">96.4</span> / <span class="u">95.8</span></div></div>
+<div class="bar"><div class="bl">Yelp stars</div><div class="bt"><i class="o" style="width:68.8%"></i><i class="u" style="width:67.2%"></i></div><div class="bv"><span class="o">68.8</span> / <span class="u">67.2</span></div></div>
+
+<h3>Paired results, same questions</h3>
+<div class="scroll"><table><tr><th>Task</th><th class="num">n</th><th class="num">Official %</th><th class="num">JEV-27B %</th><th class="num">Diff (pts)</th><th class="num">95% CI</th><th class="num">p</th><th class="num">Same answer %</th></tr>
+<tr><td>MMLU</td><td class="num">14,042</td><td class="num">91.6</td><td class="num">83.4</td><td class="num neg">−8.2</td><td class="num">[−8.7, −7.6]</td><td class="num">&lt;0.001</td><td class="num">86.9</td></tr><tr><td>TruthfulQA</td><td class="num">817</td><td class="num">88.9</td><td class="num">78.6</td><td class="num neg">−10.3</td><td class="num">[−13.3, −7.3]</td><td class="num">&lt;0.001</td><td class="num">79.8</td></tr><tr><td>MMLU position test</td><td class="num">2,000</td><td class="num">92.2</td><td class="num">82.0</td><td class="num neg">−10.2</td><td class="num">[−11.8, −8.6]</td><td class="num">&lt;0.001</td><td class="num">84.5</td></tr><tr><td>BoolQ</td><td class="num">3,270</td><td class="num">91.3</td><td class="num">89.0</td><td class="num neg">−2.4</td><td class="num">[−3.2, −1.5]</td><td class="num">&lt;0.001</td><td class="num">93.8</td></tr><tr><td>ARC Challenge</td><td class="num">1,172</td><td class="num">97.7</td><td class="num">97.1</td><td class="num ns">−0.6</td><td class="num">[−1.5, +0.3]</td><td class="num">0.248</td><td class="num">97.6</td></tr><tr><td>SST-2</td><td class="num">872</td><td class="num">96.4</td><td class="num">95.8</td><td class="num ns">−0.7</td><td class="num">[−1.6, +0.2]</td><td class="num">0.210</td><td class="num">98.2</td></tr><tr><td>Yelp stars</td><td class="num">2,000</td><td class="num">68.8</td><td class="num">67.2</td><td class="num neg">−1.7</td><td class="num">[−3.1, −0.2]</td><td class="num">0.030</td><td class="num">87.6</td></tr></table></div>
+<p style="color:var(--fg-dim);font-size:13px">Diff is JEV-27B minus official. Red marks a statistically significant gap (p &lt; 0.05, McNemar exact test). &ldquo;Same answer&rdquo; is how often both models picked the same option.</p>
+<div class="call"><b>Where the clone holds up.</b> ARC Challenge and SST-2 are within noise (−0.6 and −0.7 points, p above 0.2). Yelp is 1.7 points lower and BoolQ 2.4 lower: statistically real, but small.</div>
+<div class="call"><b>Where it falls short.</b> MMLU (−8.2), TruthfulQA (−10.3) and the MMLU position test (−10.2) are large gaps. On MMLU, official Jev was right and the clone wrong on 1,412 questions, against only 265 the other way. The clone is also less stable when answer options are reordered.</div>
+<div class="call"><b>Against the model card.</b> The JEV-27B card reports a six-benchmark average on par with hosted Jev (84.07% vs 83.85%, self-reported). We did not reproduce that on knowledge-heavy tasks.</div>
+
+<h2><span class="n">05</span>Limits of this report</h2>
+<ul>
+<li>The unofficial run was done by a teammate on rented hardware. We checked that the result files are complete and that the comparison reproduces from them, but we did not re-run the model.</li>
+<li>JEV-27B was compared against Jev 1.14, while it was distilled from 1.13. Some of the gap may be a version difference.</li>
+<li>Accuracy only. Throughput and latency of the self-hosted model are measured separately.</li>
+<li>Image understanding is untested for the clone. A vision variant, <code>autotrust/JEV-27B-VL</code>, exists.</li>
+<li>One open model was tested. Smaller options such as <code>alibiserikbay/JevK5</code> (4B) are untested.</li>
+</ul>
+<footer>Source: <code>Runaraai/Jev-benchmark</code> (code, raw per-question results and reports). Run settings: seed 0, full datasets, decisions API.</footer>
+</div></body></html>
