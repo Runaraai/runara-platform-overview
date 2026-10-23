@@ -127,10 +127,20 @@
   .s-chip{fill:var(--new-bg)}
   svg text{font-family:var(--body)}
   svg .mono{font-family:var(--mono)}
+
+  .site-home{position:fixed; top:14px; right:16px; z-index:1000; font-family:var(--mono); font-size:12px; color:var(--new); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+  .site-home:hover{border-color:var(--new)}
+  .to-top{position:fixed; bottom:18px; right:16px; z-index:1000; font-family:var(--mono); font-size:12px; color:var(--fg-dim); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+  .to-top:hover{color:var(--new); border-color:var(--new)}
+  html{scroll-behavior:smooth}
+  @media (max-width:560px){ .site-home,.to-top{font-size:11px; padding:6px 10px} }
 </style>
 </head>
 <body>
-<div class="wrap">
+<a class="site-home" href="index.html">&larr; Home</a>
+<a class="to-top" href="#top">&uarr; Top</a>
+
+<div class="wrap" id="top">
 
   <header>
     <p class="kicker">Platform plan · Nov 2026 – Apr 2027</p>

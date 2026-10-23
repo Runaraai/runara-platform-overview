@@ -110,9 +110,19 @@
   .flows li{margin-bottom:6px}
 
   footer{font-size:12px; color:var(--fg-dim); border-top:1px solid var(--border); padding-top:18px; margin-top:8px}
+
+  .site-home{position:fixed; top:14px; right:16px; z-index:1000; font-family:var(--mono); font-size:12px; color:var(--accent); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+  .site-home:hover{border-color:var(--accent)}
+  .to-top{position:fixed; bottom:18px; right:16px; z-index:1000; font-family:var(--mono); font-size:12px; color:var(--fg-dim); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+  .to-top:hover{color:var(--accent); border-color:var(--accent)}
+  html{scroll-behavior:smooth}
+  @media (max-width:560px){ .site-home,.to-top{font-size:11px; padding:6px 10px} }
 </style>
 
-<div class="wrap">
+<a class="site-home" href="index.html">&larr; Home</a>
+<a class="to-top" href="#top">&uarr; Top</a>
+
+<div class="wrap" id="top">
   <header class="doc">
     <div class="eyebrow">Summary &middot; three threads, one product</div>
     <h1 class="title">Runara Platform Overview</h1>
