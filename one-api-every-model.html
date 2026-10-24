@@ -1,5 +1,5 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>One API, Every Model</title>
+<!doctype html><html><head><meta charset="utf-8"><title>One API, Every Model</title><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!-- layout: long-form memo, sticky section index on desktop, single column on phone -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   :root{
@@ -118,7 +118,7 @@
     <header class="doc">
       <div class="eyebrow">Market research &middot; draft for team review</div>
       <h1 class="title">One API, Every Model</h1>
-      <p class="thesis">OpenRouter proved that routing between models is itself a business &mdash; a $1.3B one three months before Stripe paid roughly 5&times; that for it. What it got right, what it's exposed to, and where Runara's hardware-choice engine already overlaps with it.</p>
+      <p class="thesis">OpenRouter proved that routing between models is itself a business &mdash; valued at $1.3B in its May 2026 Series B, then sold to Stripe three months later for a reported $7B+, roughly 5&times; that <span class="tag reported">reported</span>. What it got right, what it's exposed to, and where Runara's hardware-choice engine already overlaps with it.</p>
       <div class="meta">
         <span><b>Status</b> Research brief &mdash; for team discussion</span>
         <span><b>Subject</b> OpenRouter (openrouter.ai), and a possible Runara single-API product</span>
@@ -167,12 +167,12 @@
       <p class="dek">Six simple decisions that compound into something hard to copy.</p>
 
       <ul>
-        <li><b>Pass-through pricing, zero markup.</b> Developers can verify it isn&rsquo;t charging more than going direct <span class="tag reported">reported</span>.</li>
+        <li><b>No markup on tokens.</b> Per-token prices pass through at each provider&rsquo;s list rate, so developers can verify a call costs the same as going direct. Revenue comes instead from a fee on credit purchases: 5.5% on the standard plan, 8% on Business, 5% for crypto <span class="tag fact">fact</span>.</li>
         <li><b>Fast new-model integration.</b> New models reportedly go live within hours of release <span class="tag claim">claim</span>, and being first matters.</li>
         <li><b>Privacy as a product feature.</b> No prompt logging by default, plus a <code>data_collection: "deny"</code> option that limits routing to no-retention providers <span class="tag reported">reported</span>.</li>
         <li><b>The public leaderboard.</b> Turns usage into a discovery engine that sends more traffic through OpenRouter.</li>
-        <li><b>Generous BYOK.</b> $25K/month of free routing on your own keys removes the main objection to adding a middle layer.</li>
-        <li><b>US and Chinese labs under one roof.</b> Hyperscaler gateways mirror their own cloud&rsquo;s roster; OpenRouter spans labs no single cloud carries.</li>
+        <li><b>Generous BYOK.</b> The first $25K/month of list-price inference on your own keys carries no fee, then 5% above that <span class="tag reported">reported</span>. That removes the main objection to adding a middle layer.</li>
+        <li><b>US and Chinese labs under one roof.</b> Hyperscaler gateways mirror their own cloud&rsquo;s roster; OpenRouter spans labs no single cloud carries <span class="tag hyp">hypothesis</span>.</li>
       </ul>
     </section>
 
@@ -182,11 +182,11 @@
 
       <div class="risk">
         <h3>It may be eroding its own reason to exist</h3>
-        <p style="margin-bottom:0; font-size:14px">One analysis frames this precisely: the better OpenRouter gets at commoditizing model choice, the faster models converge on price and performance, which structurally shrinks the value of routing between them over time <span class="tag reported">reported</span>, as argued by BigGo Finance's coverage of the platform's own usage data. A successful aggregator accelerates the commoditization that makes aggregation less valuable.</p>
+        <p style="margin-bottom:0; font-size:14px">One analysis frames this precisely: the better OpenRouter gets at commoditizing model choice, the faster models converge on price and performance, which structurally shrinks the value of routing between them over time <span class="tag claim">claim</span>, as argued by BigGo Finance's coverage of the platform's own usage data. A successful aggregator accelerates the commoditization that makes aggregation less valuable.</p>
       </div>
       <div class="risk">
         <h3>The take rate is thin and easy to undercut</h3>
-        <p style="margin-bottom:0; font-size:14px">A ~5&ndash;5.5% fee has low barriers to entry. LiteLLM offers the same routing logic as a free, self-hosted open-source library; a large customer with engineering capacity can simply run the equivalent internally and keep the 5%.</p>
+        <p style="margin-bottom:0; font-size:14px">A 5.5% fee on credit purchases (no markup on the tokens themselves) has low barriers to entry. LiteLLM offers the same routing logic as a free, self-hosted open-source library; a large customer with engineering capacity can simply run the equivalent internally and keep the 5%.</p>
       </div>
       <div class="risk">
         <h3>Provider disintermediation is a standing structural risk</h3>
@@ -194,7 +194,7 @@
       </div>
       <div class="risk">
         <h3>Public rankings aren't the whole market</h3>
-        <p style="margin-bottom:0; font-size:14px">Developer discussion (Hacker News, LessWrong) flags that OpenRouter's leaderboard reflects <i>routed</i> traffic only &mdash; Together, Fireworks, and private enterprise deployments don't disclose comparable per-model breakdowns, so "OpenRouter's #1 model" isn't necessarily the industry's most-used model <span class="tag reported">reported</span>. The same threads note that failing to pin a specific provider in a request can invalidate apples-to-apples benchmarking, since "the same model" served by different backends can run different quantization and behave differently <span class="tag reported">reported</span>.</p>
+        <p style="margin-bottom:0; font-size:14px">Developer discussion (Hacker News, LessWrong) flags that OpenRouter's leaderboard reflects <i>routed</i> traffic only &mdash; Together, Fireworks, and private enterprise deployments don't disclose comparable per-model breakdowns, so "OpenRouter's #1 model" isn't necessarily the industry's most-used model <span class="tag claim">claim</span>. The same threads note that failing to pin a specific provider in a request can invalidate apples-to-apples benchmarking, since "the same model" served by different backends can run different quantization and behave differently <span class="tag claim">claim</span>.</p>
       </div>
     </section>
 
@@ -253,7 +253,7 @@
 
       <div class="callout">
         <h3>The near-term path, grounded in what's already there</h3>
-        <p>Expose one new endpoint under <code>api/v1/</code> that accepts the same request shape as <code>api/playground/chat</code>, but takes a <code>model</code> name instead of a caller-supplied <code>endpoint</code>. Internally it looks the model up against the optimizer catalog (section 06's "Runara-hosted replicas" branch) or an external-provider passthrough table, reusing <code>discoverModelApi</code>/<code>chatModelError</code> for capability checks and error normalization it already has. The deployment-management API in <code>api/v1/</code> stays exactly as it is &mdash; this would be a new sibling endpoint, not a replacement.</p>
+        <p>Expose one new endpoint under <code>api/v1/</code> that accepts the same request shape as <code>api/playground/chat</code>, but takes a <code>model</code> name instead of a caller-supplied <code>endpoint</code>. Internally it looks the model up against the optimizer catalog (the "Runara-hosted" branch in section 08's diagram) or an external-provider passthrough table, reusing <code>discoverModelApi</code>/<code>chatModelError</code> for capability checks and error normalization it already has. The deployment-management API in <code>api/v1/</code> stays exactly as it is &mdash; this would be a new sibling endpoint, not a replacement.</p>
       </div>
     </section>
 
@@ -314,10 +314,11 @@ flowchart LR
       <span><span class="tag hyp">hypothesis</span> &mdash; this document's own working idea, not yet tested</span>
     </div>
     <footer>
-      Research sources include TechCrunch, PYMNTS, Yahoo Finance, Dakota, KuCoin, arr.club, getlatka.com, OpenRouter's own blog and docs, Pinggy, markaicode.com, BigGo Finance, tokenmaxxing.com, and Hacker News/LessWrong discussion threads, current as of October 2026. Section 07 checked directly against the app-runara-ai codebase. Drafted for the team to react to and amend.
+      Research sources include Stripe&rsquo;s newsroom, Bloomberg and New York Times reporting on the acquisition (via secondary coverage), OpenRouter&rsquo;s pricing FAQ, TechCrunch, PYMNTS, Yahoo Finance, Dakota, KuCoin, arr.club, getlatka.com, OpenRouter's own blog and docs, Pinggy, markaicode.com, BigGo Finance, tokenmaxxing.com, and Hacker News/LessWrong discussion threads, current as of October 2026. Section 07 checked directly against the app-runara-ai codebase. Drafted for the team to react to and amend.
     </footer>
   </main>
 </div>
+
 
 <!--claude-mermaid-runtime-begin:3477-->
 <style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
@@ -395,5 +396,4 @@ if(mq&&mq.addEventListener)mq.addEventListener('change',render);
 if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
 })();</script>
 <!--claude-mermaid-runtime-end-->
-
 </body></html>
