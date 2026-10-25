@@ -31,10 +31,10 @@ code{font:13px var(--mono);background:var(--surface);border:1px solid var(--bord
 .scroll{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface);margin:12px 0}
 table{border-collapse:collapse;width:100%;font-size:13.5px} th,td{padding:9px 12px;text-align:left;border-top:1px solid var(--border);white-space:nowrap}
 th{border-top:0;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fg-dim)} .num{text-align:right;font-variant-numeric:tabular-nums}
-.neg{color:var(--bad);font-weight:600} .ns{color:var(--fg-dim)}
+.neg{color:var(--bad);font-weight:600} .pos{color:var(--ok);font-weight:600} .ns{color:var(--fg-dim)}
 .legend{display:flex;gap:18px;font-size:13px;margin:12px 0 6px;flex-wrap:wrap} .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.o{color:var(--off)} i.o{background:var(--off)} .u{color:var(--un)} i.u{background:var(--un)}
-.bar{display:grid;grid-template-columns:150px 1fr 90px;gap:12px;align-items:center;margin:10px 0;font-size:13.5px}
+.o{color:var(--off)} i.o{background:var(--off)} .u{color:var(--un)} i.u{background:var(--un)} .w{color:var(--ok)} i.w{background:var(--ok)}
+.bar{display:grid;grid-template-columns:150px 1fr 130px;gap:12px;align-items:center;margin:10px 0;font-size:13.5px}
 .bt{display:flex;flex-direction:column;gap:3px;min-width:0} .bt i{display:block;height:9px;border-radius:2px}
 .bv{font:12px var(--mono);text-align:right}
 .call{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:12px 16px;margin:16px 0;max-width:72ch}
@@ -46,15 +46,15 @@ footer{font-size:12px;color:var(--fg-dim);border-top:1px solid var(--border);pad
 <a class="to-top" href="#top">&uarr; Top</a>
 <div class="wrap" id="top">
 <div class="eyebrow">Runara &middot; benchmark report</div>
-<h1>Jev vs an open Jev clone: accuracy benchmark</h1>
-<p class="lead">We benchmarked TypeSafe's hosted Jev model, then self-hosted an open-weights Jev-style model on one H100 and ran the identical test on it. The clone matches Jev on simple classification but is 8 to 10 points behind on knowledge and reasoning.</p>
-<div class="meta">October 23, 2026 &middot; same questions, same settings (seed 0) for both models &middot; 7 shared tasks, 24,173 questions each</div>
+<h1>Jev vs open Jev models: accuracy, fp4 and serving cost</h1>
+<p class="lead">We benchmarked TypeSafe's hosted Jev 1.14, then self-hosted open-weights Jev models on our own GPUs and ran the identical test. The newest open model, AutoTrust-JEV-27B v1.1, is the closest we have found: ahead on BoolQ and SST-2, level on ARC and Yelp, behind only on MMLU and TruthfulQA. Quantized to fp4 it keeps almost all of that accuracy.</p>
+<div class="meta">Updated October 25, 2026 &middot; v1.1, fp4 and serving cost added &middot; same questions, same scoring (seed 0) for every model &middot; 7 shared tasks</div>
 
 <div class="cards">
-<div class="card"><div class="k">Official</div><div class="v">91.6%</div><div class="s">MMLU, Jev 1.14</div></div>
-<div class="card"><div class="k">Unofficial</div><div class="v">83.4%</div><div class="s">MMLU, JEV-27B</div></div>
-<div class="card"><div class="k">Largest gap</div><div class="v">−10.3</div><div class="s">points, TruthfulQA</div></div>
-<div class="card"><div class="k">No real gap on</div><div class="v">2 of 7</div><div class="s">tasks within noise (ARC, SST-2)</div></div>
+<div class="card"><div class="k">MMLU, v1.1</div><div class="v">88.6%</div><div class="s">vs 91.6% official (&minus;3.0), up from 83.4% for JEV-27B</div></div>
+<div class="card"><div class="k">fp4 cost</div><div class="v">&minus;0.4</div><div class="s">points average accuracy, NVFP4 vs bf16</div></div>
+<div class="card"><div class="k">Cheapest serving</div><div class="v">$0.137</div><div class="s">per 1M input tokens, RTX PRO 6000 Blackwell</div></div>
+<div class="card"><div class="k">Largest gap</div><div class="v">&minus;10.5</div><div class="s">points, TruthfulQA (unchanged from JEV-27B)</div></div>
 </div>
 
 <h2><span class="n">01</span>What we measured</h2>
@@ -68,9 +68,70 @@ footer{font-size:12px;color:var(--fg-dim);border-top:1px solid var(--border);pad
 <tr><td>Yelp stars</td><td>Rate a review 1 to 5 (exact match)</td><td>score</td><td class="num">2,000</td></tr>
 <tr><td>MMLU position test</td><td>500 MMLU questions, each asked 4 times with the options reordered</td><td>choice</td><td class="num">2,000</td></tr>
 <tr><td>ScienceQA (images)</td><td>Questions about a picture. Official model only.</td><td>choice</td><td class="num">500</td></tr></table></div>
-<p>All datasets are used in full (Yelp capped at 2,000, the position test at 500 questions). Both models received identical questions with seed 0. Accuracy intervals are 95% Wilson intervals.</p>
+<p>All datasets are used in full (Yelp capped at 2,000, the position test at 500 questions). Every model received identical questions with seed 0. Accuracy intervals are 95% Wilson intervals.</p>
 
-<h2><span class="n">02</span>Official model: TypeSafe Jev</h2>
+<h2><span class="n">02</span>Latest: AutoTrust-JEV-27B v1.1</h2>
+<p>The newest open Jev model, and the one we now recommend as the base for a self-hosted Jev. It runs on a single 80 GB GPU as shipped; quantized to fp4 it drops to about a quarter of that size, so it fits on much cheaper cards.</p>
+<div class="kv">
+<div><b>Model</b><span><code>autotrust/AutoTrust-JEV-27B-v1.1</code> (Apache-2.0), built on Qwen3.8-27B</span></div>
+<div><b>Size</b><span>About 54 GB in bf16; about a quarter of that in NVFP4</span></div>
+<div><b>Benchmark</b><span>Our own board, same questions and scoring as the official Jev 1.14 run</span></div>
+</div>
+<div class="scroll"><table><tr><th>Task</th><th class="num">Official 1.14 %</th><th class="num">JEV-27B %</th><th class="num">v1.1 %</th><th class="num">v1.1 vs official (pts)</th></tr>
+<tr><td>MMLU</td><td class="num">91.6</td><td class="num">83.4</td><td class="num">88.6</td><td class="num neg">&minus;3.0</td></tr><tr><td>MMLU position test</td><td class="num">92.2</td><td class="num">82.0</td><td class="num">88.5</td><td class="num neg">&minus;3.6</td></tr><tr><td>ARC Challenge</td><td class="num">97.7</td><td class="num">97.1</td><td class="num">97.4</td><td class="num neg">&minus;0.3</td></tr><tr><td>BoolQ</td><td class="num">91.3</td><td class="num">89.0</td><td class="num">93.5</td><td class="num pos">+2.2</td></tr><tr><td>SST-2</td><td class="num">96.4</td><td class="num">95.8</td><td class="num">96.9</td><td class="num pos">+0.5</td></tr><tr><td>TruthfulQA</td><td class="num">88.9</td><td class="num">78.6</td><td class="num">78.3</td><td class="num neg">&minus;10.5</td></tr><tr><td>Yelp stars</td><td class="num">68.8</td><td class="num">67.2</td><td class="num">67.7</td><td class="num neg">&minus;1.1</td></tr></table></div>
+<p style="color:var(--fg-dim);font-size:13px">Differences are computed from unrounded scores, so a few differ by 0.1 from subtracting the rounded columns. Green is ahead of official Jev, red is behind.</p>
+<div class="legend"><span><i class="o"></i>Official Jev 1.14</span><span><i class="u"></i>JEV-27B</span><span><i class="w"></i>JEV-27B v1.1</span></div>
+<div class="bar"><div class="bl">MMLU</div><div class="bt"><i class="o" style="width:91.6%"></i><i class="u" style="width:83.4%"></i><i class="w" style="width:88.6%"></i></div><div class="bv"><span class="o">91.6</span> / <span class="u">83.4</span> / <span class="w">88.6</span></div></div>
+<div class="bar"><div class="bl">MMLU position test</div><div class="bt"><i class="o" style="width:92.2%"></i><i class="u" style="width:82.0%"></i><i class="w" style="width:88.5%"></i></div><div class="bv"><span class="o">92.2</span> / <span class="u">82.0</span> / <span class="w">88.5</span></div></div>
+<div class="bar"><div class="bl">ARC Challenge</div><div class="bt"><i class="o" style="width:97.7%"></i><i class="u" style="width:97.1%"></i><i class="w" style="width:97.4%"></i></div><div class="bv"><span class="o">97.7</span> / <span class="u">97.1</span> / <span class="w">97.4</span></div></div>
+<div class="bar"><div class="bl">BoolQ</div><div class="bt"><i class="o" style="width:91.3%"></i><i class="u" style="width:89.0%"></i><i class="w" style="width:93.5%"></i></div><div class="bv"><span class="o">91.3</span> / <span class="u">89.0</span> / <span class="w">93.5</span></div></div>
+<div class="bar"><div class="bl">SST-2</div><div class="bt"><i class="o" style="width:96.4%"></i><i class="u" style="width:95.8%"></i><i class="w" style="width:96.9%"></i></div><div class="bv"><span class="o">96.4</span> / <span class="u">95.8</span> / <span class="w">96.9</span></div></div>
+<div class="bar"><div class="bl">TruthfulQA</div><div class="bt"><i class="o" style="width:88.9%"></i><i class="u" style="width:78.6%"></i><i class="w" style="width:78.3%"></i></div><div class="bv"><span class="o">88.9</span> / <span class="u">78.6</span> / <span class="w">78.3</span></div></div>
+<div class="bar"><div class="bl">Yelp stars</div><div class="bt"><i class="o" style="width:68.8%"></i><i class="u" style="width:67.2%"></i><i class="w" style="width:67.7%"></i></div><div class="bv"><span class="o">68.8</span> / <span class="u">67.2</span> / <span class="w">67.7</span></div></div>
+<div class="call"><b>What changed from JEV-27B.</b> v1.1 closes most of the MMLU gap (&minus;8.2 to &minus;3.0) and the MMLU position-test gap (&minus;10.2 to &minus;3.6), and now beats official Jev on BoolQ (+2.2) and SST-2 (+0.5). TruthfulQA did not improve: v1.1 scores 78.3%, about the same as JEV-27B's 78.6%, still about 10 points behind. Of the open options we have tested, none lands closer to the real thing.</div>
+
+<h2><span class="n">03</span>fp4: the quality holds</h2>
+<p>This is the result that matters for &ldquo;Runara Jev&rdquo;. We quantized v1.1 to blockwise NVFP4 with our own pipeline, keeping the decision readout in bf16 so it stays intact.</p>
+<div class="scroll"><table><tr><th>Task</th><th class="num">v1.1 bf16 %</th><th class="num">v1.1 NVFP4 %</th><th class="num">Diff (pts)</th></tr>
+<tr><td>MMLU</td><td class="num">88.6</td><td class="num">88.3</td><td class="num neg">&minus;0.3</td></tr><tr><td>MMLU position test</td><td class="num">88.5</td><td class="num">88.6</td><td class="num pos">+0.1</td></tr><tr><td>ARC Challenge</td><td class="num">97.4</td><td class="num">97.4</td><td class="num ns">0.0</td></tr><tr><td>BoolQ</td><td class="num">93.5</td><td class="num">93.2</td><td class="num neg">&minus;0.3</td></tr><tr><td>SST-2</td><td class="num">96.9</td><td class="num">96.8</td><td class="num neg">&minus;0.1</td></tr><tr><td>TruthfulQA</td><td class="num">78.3</td><td class="num">76.6</td><td class="num neg">&minus;1.7</td></tr><tr><td>Yelp stars</td><td class="num">67.7</td><td class="num">67.0</td><td class="num neg">&minus;0.7</td></tr></table></div>
+<div class="call"><b>Roughly four times smaller for almost no accuracy cost.</b> The average drop is about 0.4 points; the worst case is 1.7 points on TruthfulQA. That is exactly the trade &ldquo;Runara Jev&rdquo; needs.</div>
+<p><b>Caveat:</b> this run measured quality only. The real VRAM and throughput savings need a separate packed-export run, which has not been done yet.</p>
+
+<h2><span class="n">04</span>What it costs to serve</h2>
+<p>We ran v1.1 (bf16) on an RTX PRO 6000 Blackwell and on an H100. The Blackwell is slightly slower but cheaper by the hour, and on cost per token it comes out about 27% cheaper. For a bf16 deployment it is the better buy.</p>
+<div class="scroll"><table><tr><th>GPU</th><th class="num">$/hr</th><th class="num">Peak decisions/s</th><th class="num">$ per 1k decisions</th><th class="num">$ per 1M input tokens</th></tr>
+<tr><td>RTX PRO 6000 Blackwell</td><td class="num">$1.47</td><td class="num">12.5</td><td class="num">$0.033</td><td class="num">$0.137</td></tr>
+<tr><td>H100 SXM</td><td class="num">$2.17</td><td class="num">13.5</td><td class="num">$0.045</td><td class="num">$0.187</td></tr></table></div>
+<p style="color:var(--fg-dim);font-size:13px">About 239 input tokens and one output token per decision. Cost per 1k decisions = hourly price &divide; (peak decisions/s &times; 3,600) &times; 1,000.</p>
+
+<h2><span class="n">05</span>Speculative decoding: tried, doesn't fit</h2>
+<p>We tested whether speculative decoding would speed Jev up. It won't, for two reasons:</p>
+<ul>
+<li><b>Nothing to speculate on.</b> Every Jev decision is a single forward pass: one token, read straight off the answer-code logprobs. A draft model has nothing to run ahead on.</li>
+<li><b>The engine refuses it.</b> The bidirectional-prefix plugin the model needs rejects speculative decoding outright, so the server will not start with it enabled.</li>
+</ul>
+<p>There is no speed to win back here. It would only matter for a chat-style deployment of the base model, which is not what the platform uses.</p>
+
+<h2><span class="n">06</span>Can the platform serve many customers and bill them?</h2>
+<h3>Routing: not today</h3>
+<p>Each hosted model is a single GPU instance behind a one-to-one auth proxy. There is no gateway or load balancer spreading traffic, so concurrency is capped by that one box. Serving many customers means running several instances behind a real load balancer, which does not exist yet.</p>
+<h3>Per-token billing: half-built</h3>
+<div class="scroll"><table><tr><th>Piece</th><th>Status</th></tr>
+<tr><td>Ledger, rate math, wallet and Stripe</td><td class="pos">Working</td></tr>
+<tr><td>Endpoint that records usage</td><td class="pos">Working</td></tr>
+<tr><td>GPU-time billing</td><td class="pos">In production</td></tr>
+<tr><td>On-box counting and reporting of tokens per request</td><td class="neg">Missing</td></tr>
+<tr><td>Per-model token rates</td><td class="neg">Not wired in</td></tr>
+<tr><td>Per-user usage split on shared models</td><td class="neg">Missing (flat $3/week subscription for now)</td></tr></table></div>
+
+<h2><span class="n">07</span>What's left</h2>
+<ul>
+<li><b>Deploying v1.1 to the platform</b> (hosted and catalog) is Niraj's call on production. The repo and serve config are ready to hand over.</li>
+<li><b>Loading the fp4 build as &ldquo;Runara Jev&rdquo;</b> waits on Niraj and Subhash signing off on these numbers.</li>
+<li><b>Packed-fp4 performance run.</b> Quality is proven; the VRAM and throughput savings are still to be measured.</li>
+</ul>
+
+<h2><span class="n">08</span>Official model: TypeSafe Jev</h2>
 <div class="kv">
 <div><b>Model</b><span><code>typesafe/jev-1.14</code>, served as <code>typesafe/jev-1.14-20261014</code></span></div>
 <div><b>Access</b><span>OpenRouter decisions endpoint (<code>/api/alpha/decisions</code>), hosted by TypeSafe</span></div>
@@ -81,7 +142,7 @@ footer{font-size:12px;color:var(--fg-dim);border-top:1px solid var(--border);pad
 <tr><td>MMLU</td><td class="num">14,042</td><td class="num">91.6</td><td class="num">[91.1, 92.0]</td><td class="num">92.5</td><td class="num">1.7</td><td class="num">0.322</td></tr><tr><td>ARC Challenge</td><td class="num">1,172</td><td class="num">97.7</td><td class="num">[96.7, 98.4]</td><td class="num">98.1</td><td class="num">0.7</td><td class="num">0.105</td></tr><tr><td>TruthfulQA</td><td class="num">817</td><td class="num">88.9</td><td class="num">[86.5, 90.8]</td><td class="num">87.9</td><td class="num">3.8</td><td class="num">0.396</td></tr><tr><td>SST-2</td><td class="num">872</td><td class="num">96.4</td><td class="num">[95.0, 97.5]</td><td class="num">96.8</td><td class="num">1.0</td><td class="num">0.117</td></tr><tr><td>BoolQ</td><td class="num">3,270</td><td class="num">91.3</td><td class="num">[90.3, 92.3]</td><td class="num">90.4</td><td class="num">1.7</td><td class="num">0.225</td></tr><tr><td>Yelp stars</td><td class="num">2,000</td><td class="num">68.8</td><td class="num">[66.7, 70.8]</td><td class="num">77.8</td><td class="num">9.5</td><td class="num">0.746</td></tr><tr><td>ScienceQA (images)</td><td class="num">500</td><td class="num">99.2</td><td class="num">[98.0, 99.7]</td><td class="num">98.2</td><td class="num">1.2</td><td class="num">0.025</td></tr><tr><td>MMLU position test</td><td class="num">2,000</td><td class="num">92.2</td><td class="num">[90.9, 93.3]</td><td class="num">92.8</td><td class="num">2.6</td><td class="num">0.317</td></tr></table></div>
 <p>Jev is accurate and well calibrated: its stated confidence is within about 1 to 4 points of its real accuracy on most tasks. The exception is Yelp stars, where it is overconfident by 9 points (it is right 68.8% of the time but 77.8% sure). On ratings it is off by 0.34 stars on average, and 97.9% of its answers are within one star. When the options were reordered, it gave the same answer 96.6% of the time.</p>
 
-<h2><span class="n">03</span>Unofficial model: autotrust/JEV-27B</h2>
+<h2><span class="n">09</span>Earlier open model: autotrust/JEV-27B (Oct 23)</h2>
 <p>TypeSafe has not released Jev's weights. We chose <a href="https://huggingface.co/autotrust/JEV-27B" style="color:var(--accent)">autotrust/JEV-27B</a> because it is the closest open replica we found: a third-party model, explicitly not affiliated with TypeSafe, distilled from hosted Jev 1.13 and built to output the same three answer types.</p>
 <div class="kv">
 <div><b>Model</b><span><code>autotrust/JEV-27B</code> (Apache-2.0). Qwen 27B backbone with a LoRA decision head.</span></div>
@@ -96,7 +157,7 @@ footer{font-size:12px;color:var(--fg-dim);border-top:1px solid var(--border);pad
 <tr><td>MMLU</td><td class="num">14,042</td><td class="num">83.4</td><td class="num">[82.8, 84.0]</td><td class="num">82.2</td><td class="num">2.0</td><td class="num">0.472</td></tr><tr><td>ARC Challenge</td><td class="num">1,172</td><td class="num">97.1</td><td class="num">[96.0, 97.9]</td><td class="num">94.6</td><td class="num">2.6</td><td class="num">0.114</td></tr><tr><td>TruthfulQA</td><td class="num">817</td><td class="num">78.6</td><td class="num">[75.6, 81.3]</td><td class="num">75.9</td><td class="num">4.7</td><td class="num">0.625</td></tr><tr><td>SST-2</td><td class="num">872</td><td class="num">95.8</td><td class="num">[94.2, 96.9]</td><td class="num">96.2</td><td class="num">0.9</td><td class="num">0.120</td></tr><tr><td>BoolQ</td><td class="num">3,270</td><td class="num">89.0</td><td class="num">[87.8, 90.0]</td><td class="num">89.5</td><td class="num">1.1</td><td class="num">0.292</td></tr><tr><td>Yelp stars</td><td class="num">2,000</td><td class="num">67.2</td><td class="num">[65.1, 69.2]</td><td class="num">74.4</td><td class="num">9.0</td><td class="num">0.797</td></tr><tr><td>MMLU position test</td><td class="num">2,000</td><td class="num">82.0</td><td class="num">[80.3, 83.6]</td><td class="num">82.5</td><td class="num">1.7</td><td class="num">0.509</td></tr></table></div>
 <p>Calibration is similar to the official model (errors of 1 to 5 points), so it knows roughly how sure it should be. It is also overconfident on Yelp stars (9 points). Where it differs is position stability: reordering the options changed its answer 13.2% of the time, against 3.4% for official Jev.</p>
 
-<h2><span class="n">04</span>Comparison</h2>
+<h2><span class="n">10</span>Paired comparison: official vs JEV-27B</h2>
 <div class="legend"><span><i class="o"></i>Official Jev 1.14</span><span><i class="u"></i>JEV-27B</span></div>
 <div class="bar"><div class="bl">MMLU</div><div class="bt"><i class="o" style="width:91.6%"></i><i class="u" style="width:83.4%"></i></div><div class="bv"><span class="o">91.6</span> / <span class="u">83.4</span></div></div>
 <div class="bar"><div class="bl">TruthfulQA</div><div class="bt"><i class="o" style="width:88.9%"></i><i class="u" style="width:78.6%"></i></div><div class="bv"><span class="o">88.9</span> / <span class="u">78.6</span></div></div>
@@ -114,13 +175,14 @@ footer{font-size:12px;color:var(--fg-dim);border-top:1px solid var(--border);pad
 <div class="call"><b>Where it falls short.</b> MMLU (−8.2), TruthfulQA (−10.3) and the MMLU position test (−10.2) are large gaps. On MMLU, official Jev was right and the clone wrong on 1,412 questions, against only 265 the other way. The clone is also less stable when answer options are reordered.</div>
 <div class="call"><b>Against the model card.</b> The JEV-27B card reports a six-benchmark average on par with hosted Jev (84.07% vs 83.85%, self-reported). We did not reproduce that on knowledge-heavy tasks.</div>
 
-<h2><span class="n">05</span>Limits of this report</h2>
+<h2><span class="n">11</span>Limits of this report</h2>
 <ul>
-<li>The unofficial run was done by a teammate on rented hardware. We checked that the result files are complete and that the comparison reproduces from them, but we did not re-run the model.</li>
+<li>The open-model runs were done by a teammate on rented hardware. We checked that the result files are complete and that the comparison reproduces from them, but we did not re-run the model.</li>
 <li>JEV-27B was compared against Jev 1.14, while it was distilled from 1.13. Some of the gap may be a version difference.</li>
-<li>Accuracy only. Throughput and latency of the self-hosted model are measured separately.</li>
+<li>Serving cost is measured for v1.1 in bf16 only. fp4 throughput and memory are not yet measured.</li>
+<li>v1.1 and fp4 results are reported as accuracy only; confidence intervals and paired significance tests (as in section 10) are not yet published for them.</li>
 <li>Image understanding is untested for the clone. A vision variant, <code>autotrust/JEV-27B-VL</code>, exists.</li>
-<li>One open model was tested. Smaller options such as <code>alibiserikbay/JevK5</code> (4B) are untested.</li>
+<li>Two open models were tested (JEV-27B and v1.1). Smaller options such as <code>alibiserikbay/JevK5</code> (4B) are untested.</li>
 </ul>
 <footer>Source: <code>Runaraai/Jev-benchmark</code> (code, raw per-question results and reports). Run settings: seed 0, full datasets, decisions API.</footer>
 </div></body></html>
