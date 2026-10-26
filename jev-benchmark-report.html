@@ -98,10 +98,10 @@ footer{font-size:12px;color:var(--fg-dim);border-top:1px solid var(--border);pad
 <p><b>Caveat:</b> this run measured quality only. The real VRAM and throughput savings need a separate packed-export run, which has not been done yet.</p>
 
 <h2><span class="n">04</span>What it costs to serve</h2>
-<p>We ran v1.1 (bf16) on an RTX PRO 6000 Blackwell and on an H100. The Blackwell is slightly slower but cheaper by the hour, and on cost per token it comes out about 27% cheaper. For a bf16 deployment it is the better buy.</p>
-<div class="scroll"><table><tr><th>GPU</th><th class="num">$/hr</th><th class="num">Peak decisions/s</th><th class="num">$ per 1k decisions</th><th class="num">$ per 1M input tokens</th></tr>
-<tr><td>RTX PRO 6000 Blackwell</td><td class="num">$1.47</td><td class="num">12.5</td><td class="num">$0.033</td><td class="num">$0.137</td></tr>
-<tr><td>H100 SXM</td><td class="num">$2.17</td><td class="num">13.5</td><td class="num">$0.045</td><td class="num">$0.187</td></tr></table></div>
+<p>We ran v1.1 (bf16) on an RTX PRO 6000 Blackwell and on an H100. The Blackwell is slightly slower but cheaper by the hour, and on cost per token it comes out about 27% cheaper. Both load in about 51 GB, so a single 96 GB (Blackwell) or 80 GB (H100) card serves one instance with headroom. For a bf16 deployment the Blackwell is the better buy.</p>
+<div class="scroll"><table><tr><th>GPU</th><th class="num">$/hr</th><th class="num">Peak decisions/s</th><th class="num">VRAM, bf16</th><th class="num">$ per 1k decisions</th><th class="num">$ per 1M input tokens</th></tr>
+<tr><td>RTX PRO 6000 Blackwell</td><td class="num">$1.47</td><td class="num">12.5</td><td class="num">51.1 GiB</td><td class="num">$0.033</td><td class="num">$0.137</td></tr>
+<tr><td>H100 SXM</td><td class="num">$2.17</td><td class="num">13.5</td><td class="num">~51 GiB</td><td class="num">$0.045</td><td class="num">$0.187</td></tr></table></div>
 <p style="color:var(--fg-dim);font-size:13px">About 239 input tokens and one output token per decision. Cost per 1k decisions = hourly price &divide; (peak decisions/s &times; 3,600) &times; 1,000.</p>
 
 <h2><span class="n">05</span>Speculative decoding: tried, doesn't fit</h2>
