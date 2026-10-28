@@ -136,6 +136,33 @@
   footer.doc-footer{grid-column:1/-1;margin-top:1rem;color:var(--muted);font-size:.84rem;
         border-top:1px solid var(--border);padding-top:1.3rem;max-width:72ch}
 
+  /* ---------- Craft pass: hierarchy, measure, rhythm ---------- */
+  .masthead h1{font-size:clamp(1.9rem,4.6vw,2.9rem);letter-spacing:-.02em;margin-bottom:.8rem}
+  .masthead .meta{font-family:"IBM Plex Mono";font-size:.72rem;letter-spacing:.05em;
+        text-transform:uppercase;color:var(--muted);margin-top:1.15rem;
+        display:flex;flex-wrap:wrap;gap:.45rem .9rem;align-items:center}
+  .masthead .meta span{display:inline-flex;align-items:center;gap:.4rem}
+  .masthead .meta b{color:var(--accent-ink);font-weight:600}
+  .masthead .meta .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .masthead .meta .sep{width:1px;height:12px;background:var(--border)}
+
+  /* comfortable reading measure for prose; figures/tables/chips stay full width */
+  section.layer p,section.layer ul,section.layer ol{max-width:72ch}
+  section.layer .scroll-table,section.layer figure.diagram,section.layer .chips{max-width:none}
+
+  /* eyebrow and section heads get a small accent marker, consistent with the kicker */
+  .eyebrow{display:inline-flex;align-items:center;gap:.45rem}
+  .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+  .question{font-size:1.04rem}
+
+  /* tab bar: fade the overflow edges so the scroll is legible as a scroll */
+  .tabbar{-webkit-mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent)}
+
+  /* tables: zebra rows + lined-up digits */
+  table{font-variant-numeric:tabular-nums}
+  tbody tr:nth-child(even) td{background:var(--surface-2)}
+
   /* site nav */
   .site-home{position:fixed; top:14px; right:16px; z-index:1000; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--accent-ink); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
   .site-home:hover{border-color:var(--accent)}
@@ -185,6 +212,15 @@
       layer1/layer2/layer3/layer4 repos; Layer 1.5, Layer 5, and Layer 6 are grounded in
       layer1.5 and the app-runara-ai platform repo; Step 1 and the infrastructure
       workstream come from the team's own master execution plan.</p>
+    <div class="meta">
+      <span><span class="dot"></span>Step 1 &rarr; Layer 6</span>
+      <span class="sep"></span>
+      <span><b>9</b> stages</span>
+      <span class="sep"></span>
+      <span><b>never guess</b> discipline</span>
+      <span class="sep"></span>
+      <span>grounded in repo code</span>
+    </div>
   </div>
 
   <div class="tabbar" role="tablist" aria-label="Pipeline layers" id="tabbar">
