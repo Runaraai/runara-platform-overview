@@ -1,0 +1,1670 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Runara Pipeline Reference v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout concept: a long technical reference with a sticky left table-of-contents
+     rail on desktop (collapsing to a top accordion on phone) and a single reading
+     column on the right, diagrams inset as full-width figures inside each section. */
+  :root{
+    --bg:#f5f7fb; --surface:#ffffff; --surface-2:#eef1f7; --fg:#1b2434; --muted:#5b6478;
+    --border:#dde3ee; --accent:#2f5f8f; --accent-soft:#e7eef6; --accent-ink:#1d4063;
+    --green:#2f7d4f; --green-soft:#e4f2e6; --amber:#9c6a12; --amber-soft:#fbf0dd;
+    --red:#b23b3b; --red-soft:#fbe7e7; --purple:#6a4a9c; --purple-soft:#efe7f6;
+    --code-bg:#eef1f7; --shadow:0 1px 2px rgba(27,36,52,.06),0 8px 24px rgba(27,36,52,.05);
+    font-size:16px; color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#11151e; --surface:#161b26; --surface-2:#1c2230; --fg:#e7ecf6; --muted:#9aa4ba;
+      --border:#2a3144; --accent:#8db9e8; --accent-soft:#1c2a3c; --accent-ink:#bcd7f3;
+      --green:#86d2a4; --green-soft:#16271d; --amber:#e4b36c; --amber-soft:#2a2213;
+      --red:#e79a9a; --red-soft:#2c1a1b; --purple:#c3a9ea; --purple-soft:#231b31;
+      --code-bg:#1b2130; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#11151e; --surface:#161b26; --surface-2:#1c2230; --fg:#e7ecf6; --muted:#9aa4ba;
+    --border:#2a3144; --accent:#8db9e8; --accent-soft:#1c2a3c; --accent-ink:#bcd7f3;
+    --green:#86d2a4; --green-soft:#16271d; --amber:#e4b36c; --amber-soft:#2a2213;
+    --red:#e79a9a; --red-soft:#2c1a1b; --purple:#c3a9ea; --purple-soft:#231b31;
+    --code-bg:#1b2130; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:"IBM Plex Sans",system-ui,sans-serif;
+       line-height:1.62;}
+  code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;}
+  a{color:var(--accent-ink)}
+  h1,h2,h3,h4{font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700;
+              line-height:1.22;text-wrap:balance;color:var(--fg)}
+  p{margin:0 0 1em}
+  .shell{
+    max-width:980px;margin:0 auto;
+    padding-left:max(20px, env(safe-area-inset-left,0px));
+    padding-right:max(20px, env(safe-area-inset-right,0px));
+    padding-block:2.2rem 5rem;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead{max-width:760px;margin-bottom:1.6rem}
+  .kicker{font-family:"IBM Plex Mono";font-size:.78rem;letter-spacing:.08em;
+          text-transform:uppercase;color:var(--accent-ink);margin-bottom:.6rem;
+          display:flex;gap:.5rem;align-items:center}
+  .kicker::before{content:"";width:1.6rem;height:2px;background:var(--accent);display:inline-block}
+  .masthead h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:0 0 .7rem}
+  .masthead .dek{color:var(--muted);font-size:1.02rem;max-width:62ch}
+  .masthead .dek em{color:var(--fg);font-style:italic}
+
+  /* ---------- Tab bar ---------- */
+  .tabbar{position:sticky;top:0;z-index:5;display:flex;gap:.4rem;overflow-x:auto;
+          -webkit-overflow-scrolling:touch;scrollbar-width:none;
+          padding:.7rem .2rem;margin:0 -.2rem 1.6rem;background:var(--bg);
+          border-bottom:1px solid var(--border)}
+  .tabbar::-webkit-scrollbar{display:none}
+  .tab{flex:none;font-family:"IBM Plex Mono";font-size:.82rem;font-weight:500;
+       color:var(--muted);background:var(--surface);border:1px solid var(--border);
+       border-radius:999px;padding:.5rem 1rem;cursor:pointer;white-space:nowrap;
+       transition:background .12s,color .12s,border-color .12s}
+  .tab:hover{color:var(--fg);border-color:var(--accent)}
+  .tab.active{color:var(--accent-ink);background:var(--accent-soft);
+       border-color:var(--accent);font-weight:600}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- Content column ---------- */
+  main{min-width:0}
+  .tab-panel[hidden]{display:none}
+  section.layer{background:var(--surface);border:1px solid var(--border);border-radius:1rem;
+            box-shadow:var(--shadow);padding:1.9rem clamp(1.1rem,3vw,2.3rem);margin-bottom:1.6rem;
+            scroll-margin-top:1.2rem}
+  section.layer.plain{background:transparent;border:none;box-shadow:none;padding:0 0 1rem}
+  .eyebrow{font-family:"IBM Plex Mono";font-size:.76rem;color:var(--accent-ink);
+           letter-spacing:.05em;margin-bottom:.35rem}
+  section.layer h2{font-size:1.45rem;margin:0 0 .25rem}
+  section.layer h3{font-size:1.08rem;margin:1.6rem 0 .55rem;padding-top:1.1rem;
+            border-top:1px solid var(--border)}
+  section.layer h3:first-of-type{border-top:none;padding-top:0;margin-top:1.3rem}
+  .question{font-style:italic;color:var(--muted);font-size:1rem;margin:.5rem 0 1.3rem;
+            max-width:72ch}
+  .question b{font-style:normal;color:var(--fg)}
+  ul,ol{margin:0 0 1em;padding-left:1.25em}
+  li{margin-bottom:.42em}
+  li::marker{color:var(--accent)}
+  strong{color:var(--fg)}
+  .muted{color:var(--muted)}
+
+  figure.diagram{margin:1.3rem 0 1.5rem;padding:1rem;background:var(--surface-2);
+            border:1px solid var(--border);border-radius:.8rem}
+  figure.diagram img{display:block;width:100%;height:auto;border-radius:.4rem}
+  figure.diagram figcaption{font-size:.82rem;color:var(--muted);margin-top:.7rem;
+            text-align:center;font-style:italic}
+
+  /* status chips, reused from the diagram palette */
+  .chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:.9rem 0 1.2rem}
+  .chip{font-family:"IBM Plex Mono";font-size:.78rem;font-weight:600;padding:.3rem .62rem;
+        border-radius:.4rem;border:1px solid transparent;white-space:nowrap}
+  .chip-green{background:var(--green-soft);color:var(--green);border-color:var(--green)}
+  .chip-amber{background:var(--amber-soft);color:var(--amber);border-color:var(--amber)}
+  .chip-red{background:var(--red-soft);color:var(--red);border-color:var(--red)}
+  .chip-blue{background:var(--accent-soft);color:var(--accent-ink);border-color:var(--accent)}
+  .chip-purple{background:var(--purple-soft);color:var(--purple);border-color:var(--purple)}
+
+  .callout{border-left:3px solid var(--accent);background:var(--accent-soft);
+        border-radius:0 .5rem .5rem 0;padding:.85rem 1.1rem;margin:1.1rem 0;font-size:.93rem}
+  .callout.warn{border-left-color:var(--red);background:var(--red-soft)}
+
+  .verbs{counter-reset:verb;list-style:none;padding:0;margin:1rem 0}
+  .verbs li{counter-increment:verb;display:flex;gap:.8rem;padding:.55rem 0;
+        border-bottom:1px dashed var(--border);align-items:baseline}
+  .verbs li:last-child{border-bottom:none}
+  .verbs li::before{content:counter(verb);font-family:"IBM Plex Mono";font-weight:700;
+        color:var(--accent);background:var(--accent-soft);min-width:1.6rem;height:1.6rem;
+        border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem}
+  .verbs code{font-weight:600}
+
+  .scroll-table{overflow-x:auto;margin:1.1rem 0;border:1px solid var(--border);border-radius:.6rem}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:.88rem}
+  thead th{background:var(--surface-2);text-align:left;font-weight:600;
+        padding:.65rem .8rem;border-bottom:1px solid var(--border);white-space:nowrap}
+  tbody td{padding:.6rem .8rem;border-bottom:1px solid var(--border);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  td.yes{color:var(--green);font-weight:600}
+
+  footer.doc-footer{grid-column:1/-1;margin-top:1rem;color:var(--muted);font-size:.84rem;
+        border-top:1px solid var(--border);padding-top:1.3rem;max-width:72ch}
+
+  /* ---------- Craft pass: hierarchy, measure, rhythm ---------- */
+  .masthead h1{font-size:clamp(1.9rem,4.6vw,2.9rem);letter-spacing:-.02em;margin-bottom:.8rem}
+  .masthead .meta{font-family:"IBM Plex Mono";font-size:.72rem;letter-spacing:.05em;
+        text-transform:uppercase;color:var(--muted);margin-top:1.15rem;
+        display:flex;flex-wrap:wrap;gap:.45rem .9rem;align-items:center}
+  .masthead .meta span{display:inline-flex;align-items:center;gap:.4rem}
+  .masthead .meta b{color:var(--accent-ink);font-weight:600}
+  .masthead .meta .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .masthead .meta .sep{width:1px;height:12px;background:var(--border)}
+
+  /* comfortable reading measure for prose; figures/tables/chips stay full width */
+  section.layer p,section.layer ul,section.layer ol{max-width:72ch}
+  section.layer .scroll-table,section.layer figure.diagram,section.layer .chips{max-width:none}
+
+  /* eyebrow and section heads get a small accent marker, consistent with the kicker */
+  .eyebrow{display:inline-flex;align-items:center;gap:.45rem}
+  .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+  .question{font-size:1.04rem}
+
+  /* tab bar: fade the overflow edges so the scroll is legible as a scroll */
+  .tabbar{-webkit-mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent)}
+
+  /* tables: zebra rows + lined-up digits */
+  table{font-variant-numeric:tabular-nums}
+  tbody tr:nth-child(even) td{background:var(--surface-2)}
+
+  /* site nav */
+  .site-home{position:fixed; top:14px; right:16px; z-index:1000; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--accent-ink); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+  .site-home:hover{border-color:var(--accent)}
+  .to-top{position:fixed; bottom:18px; right:16px; z-index:1000; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; color:var(--muted); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+  .to-top:hover{color:var(--accent-ink); border-color:var(--accent)}
+  html{scroll-behavior:smooth}
+  @media (max-width:560px){ .site-home,.to-top{font-size:11px; padding:6px 10px} }
+
+  /* ---------- Diagrams: theme-aware inline SVG ---------- */
+  .dgm-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  svg.dgm{width:100%;height:auto;display:block;font-family:"IBM Plex Sans",system-ui,sans-serif}
+  svg.dgm.wide{min-width:720px}
+  svg.dgm text{fill:var(--fg)}
+  .d-box{fill:var(--surface);stroke:var(--border);stroke-width:1.5}
+  .d-box.accent{fill:var(--accent-soft);stroke:var(--accent)}
+  .d-box.purple{fill:var(--purple-soft);stroke:var(--purple)}
+  .d-box.green{fill:var(--green-soft);stroke:var(--green)}
+  .d-box.amber{fill:var(--amber-soft);stroke:var(--amber)}
+  .d-box.red{fill:var(--red-soft);stroke:var(--red)}
+  .d-t{font-weight:700;font-size:15.5px;fill:var(--fg)}
+  .d-t.accent{fill:var(--accent-ink)} .d-t.purple{fill:var(--purple)}
+  .d-t.green{fill:var(--green)} .d-t.amber{fill:var(--amber)} .d-t.red{fill:var(--red)}
+  .d-s{font-size:12.5px;fill:var(--muted)}
+  .d-cap{font-size:13px;font-style:italic;fill:var(--muted)}
+  .d-k{font-size:12.5px;font-style:italic;fill:var(--muted)}
+  .d-mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .d-line{stroke:var(--muted);stroke-width:1.7;fill:none;opacity:.85}
+  .d-line.accent{stroke:var(--accent)} .d-line.purple{stroke:var(--purple)}
+  .d-line.green{stroke:var(--green)} .d-line.amber{stroke:var(--amber)}
+  .d-line.red{stroke:var(--red)} .d-line.dash{stroke-dasharray:5 4}
+  .d-arrow{fill:var(--muted)}
+  .d-arrow.accent{fill:var(--accent)} .d-arrow.purple{fill:var(--purple)}
+  .d-arrow.green{fill:var(--green)} .d-arrow.amber{fill:var(--amber)} .d-arrow.red{fill:var(--red)}
+
+  /* ---------- Visual pass 2: diagrams at 1:1, pipeline map, layer navigation ---------- */
+  svg.dgm{min-width:680px}
+  .d-t{font-size:15px}
+  .d-s{font-size:13px}
+  .d-k{font-size:12.5px}
+  .d-sm{font-size:13px}
+  .d-ink{fill:var(--accent-ink)}
+  .d-vt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;font-weight:600;fill:var(--fg)}
+  .d-vt.accent{fill:var(--accent-ink)} .d-vt.green{fill:var(--green)}
+  .d-m{font-size:13.5px;font-weight:600;fill:var(--accent-ink)}
+  .d-num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;fill:var(--muted);letter-spacing:.06em}
+  .d-lab{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;font-weight:600;letter-spacing:.06em;fill:var(--accent-ink)}
+  .d-box.dash{stroke-dasharray:6 4}
+  .d-panel{fill:var(--accent-soft);fill-opacity:.35;stroke:var(--accent);stroke-width:1.2;stroke-dasharray:6 5}
+  .d-funnel{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2;stroke-dasharray:6 5}
+  .d-brace{fill:none;stroke:var(--muted);stroke-width:1.3}
+  .d-seg{fill:var(--surface-2)} .d-seg.green{fill:var(--green-soft)} .d-seg.amber{fill:var(--amber-soft)}
+  .d-outline{fill:none;stroke:var(--border);stroke-width:1.5}
+  .d-arrow.amber{fill:var(--amber)}
+  figure.diagram{padding:1.1rem .9rem}
+
+  /* overview: vertical pipeline map */
+  .never-guess{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.8rem;color:var(--accent-ink);
+        background:var(--accent-soft);border:1px solid var(--border);border-radius:.6rem;
+        padding:.6rem .85rem;margin:1.1rem 0 1.4rem;display:flex;gap:.7rem;flex-wrap:wrap;align-items:baseline}
+  .ng-k{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  section.layer ol.spine{max-width:none}
+  .spine{list-style:none;margin:0;padding:0;position:relative}
+  .spine::before{content:"";position:absolute;left:21px;top:14px;bottom:28px;width:2px;background:var(--border)}
+  .spine li{margin:0}
+  .spine li::marker{content:none}
+  .spine .phase{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.68rem;font-weight:600;
+        letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:1.05rem 0 .4rem 58px}
+  .spine .phase:first-child{margin-top:0}
+  .stage a{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;align-items:center;
+        text-decoration:none;color:inherit;margin:.45rem 0}
+  .badge{position:relative;z-index:1;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
+        font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.78rem;font-weight:700;
+        background:var(--surface);border:2px solid var(--accent);color:var(--accent-ink);
+        transition:background .15s,color .15s}
+  .card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.15rem 1rem;align-items:center;
+        background:var(--surface);border:1px solid var(--border);border-radius:.8rem;padding:.75rem 1rem;
+        box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+  .card .name{font-weight:700;font-size:1rem;line-height:1.3}
+  .card .name small{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.7rem;font-weight:500;
+        color:var(--muted);margin-left:.35rem}
+  .card .q{grid-column:1;color:var(--muted);font-size:.9rem;line-height:1.4}
+  .card .out{grid-column:2;grid-row:1/span 2;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.72rem;
+        color:var(--accent-ink);background:var(--accent-soft);border-radius:.4rem;padding:.3rem .55rem;
+        max-width:15rem;text-align:right;line-height:1.35}
+  .card .out::before{content:"→ ";opacity:.7}
+  .tag{font-style:normal;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.66rem;font-weight:600;
+        color:var(--purple);background:var(--purple-soft);border:1px solid var(--purple);border-radius:999px;
+        padding:.05rem .45rem;margin-left:.35rem;vertical-align:2px}
+  .stage a:hover .card,.stage a:focus-visible .card{border-color:var(--accent);transform:translateX(3px)}
+  .stage a:hover .badge,.stage a:focus-visible .badge{background:var(--accent);color:var(--surface)}
+  .stage a:focus-visible{outline:none}
+  .stage.moe .badge{border-color:var(--purple);color:var(--purple);background:var(--purple-soft);
+        width:36px;height:36px;margin-left:4px;font-size:.7rem}
+  .stage.moe .card{border-left:3px solid var(--purple)}
+  .stage.moe a:hover .badge{background:var(--purple);color:var(--surface)}
+  .stage.moe .out{color:var(--purple);background:var(--purple-soft)}
+  .stage.s-define .badge{border-color:var(--muted);color:var(--fg)}
+  .stage.s-deploy .badge{border-color:var(--green);color:var(--green);background:var(--green-soft)}
+  .stage.s-deploy .out{color:var(--green);background:var(--green-soft)}
+  .infra-band{display:block;margin:1rem 0 1.6rem 58px;padding:.8rem 1rem;border:1px dashed var(--muted);
+        border-radius:.8rem;text-decoration:none;color:inherit;
+        background:repeating-linear-gradient(135deg,var(--surface) 0 10px,var(--surface-2) 10px 20px)}
+  .infra-band .name{font-weight:700;display:block}
+  .infra-band .q{color:var(--muted);font-size:.9rem}
+  .infra-band:hover{border-color:var(--accent)}
+  @media (max-width:640px){
+    .card{grid-template-columns:1fr}
+    .card .out{grid-column:1;grid-row:auto;justify-self:start;text-align:left;margin-top:.35rem}
+    .infra-band{margin-left:0}
+  }
+
+  /* per-layer position strip + prev/next */
+  .pos{display:flex;align-items:center;margin:0 0 1.1rem;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pos::-webkit-scrollbar{display:none}
+  .pos a{flex:none;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.68rem;font-weight:600;
+        text-decoration:none;color:var(--muted);border:1px solid var(--border);background:var(--surface);
+        border-radius:999px;padding:.18rem .5rem;line-height:1.4}
+  .pos a:hover{color:var(--accent-ink);border-color:var(--accent)}
+  .pos a.cur{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+  .pos a.moe{border-style:dashed}
+  .pos i{flex:0 0 12px;height:1px;background:var(--border)}
+  .pager{display:flex;justify-content:space-between;gap:.8rem;margin-top:2rem;padding-top:1.1rem;
+        border-top:1px solid var(--border)}
+  .pager a{flex:1 1 0;min-width:0;text-decoration:none;color:inherit;border:1px solid var(--border);
+        border-radius:.7rem;padding:.6rem .9rem;background:var(--surface);transition:border-color .15s}
+  .pager a:hover{border-color:var(--accent)}
+  .pager a.next{text-align:right}
+  .pager span{display:block}
+  .pager .dir{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.68rem;letter-spacing:.08em;
+        text-transform:uppercase;color:var(--muted)}
+  .pager .ttl{font-weight:600;font-size:.92rem;color:var(--accent-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pager .spacer{flex:1 1 0;border:none}
+</style>
+
+<a class="site-home" href="index.html">&larr; Home</a>
+<a class="to-top" href="#top" onclick="window.scrollTo({top:0});return false">&uarr; Top</a>
+
+<svg width="0" height="0" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><defs><marker id="dar" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z" class="d-arrow "/></marker><marker id="dar-a" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z" class="d-arrow accent"/></marker><marker id="dar-p" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z" class="d-arrow purple"/></marker><marker id="dar-g" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z" class="d-arrow green"/></marker><marker id="dar-r" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z" class="d-arrow red"/></marker><marker id="dar-m" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z" class="d-arrow amber"/></marker></defs></svg>
+<div class="shell" id="top">
+  <div class="masthead">
+    <div class="kicker">Technical Reference</div>
+    <h1>Runara Performance-Prediction &amp; Deployment Pipeline</h1>
+    <p class="dek">Layer 1 through Layer 6, grounded in the actual code and documents in the
+      workspace. <em>Each section below is self-contained — read top to bottom, or jump
+      straight to the layer you need.</em> Layers 1–4 are grounded directly in the
+      layer1/layer2/layer3/layer4 repos; Layer 1.5, Layer 5, and Layer 6 are grounded in
+      layer1.5 and the app-runara-ai platform repo; Step 1 and the infrastructure
+      workstream come from the team's own master execution plan.</p>
+    <div class="meta">
+      <span><span class="dot"></span>Step 1 &rarr; Layer 6</span>
+      <span class="sep"></span>
+      <span><b>9</b> stages</span>
+      <span class="sep"></span>
+      <span><b>never guess</b> discipline</span>
+      <span class="sep"></span>
+      <span>grounded in repo code</span>
+    </div>
+  </div>
+
+  <div class="tabbar" role="tablist" aria-label="Pipeline layers" id="tabbar">
+    <button type="button" role="tab" id="tab-fit-together" aria-controls="fit-together" aria-selected="true" class="tab active" data-tab="fit-together">Overview</button>
+    <button type="button" role="tab" id="tab-step1" aria-controls="step1" aria-selected="false" class="tab" data-tab="step1">Step 1</button>
+    <button type="button" role="tab" id="tab-layer1" aria-controls="layer1" aria-selected="false" class="tab" data-tab="layer1">Layer 1</button>
+    <button type="button" role="tab" id="tab-layer15" aria-controls="layer15" aria-selected="false" class="tab" data-tab="layer15">Layer 1.5</button>
+    <button type="button" role="tab" id="tab-layer2" aria-controls="layer2" aria-selected="false" class="tab" data-tab="layer2">Layer 2</button>
+    <button type="button" role="tab" id="tab-layer3" aria-controls="layer3" aria-selected="false" class="tab" data-tab="layer3">Layer 3</button>
+    <button type="button" role="tab" id="tab-layer4" aria-controls="layer4" aria-selected="false" class="tab" data-tab="layer4">Layer 4</button>
+    <button type="button" role="tab" id="tab-layer5" aria-controls="layer5" aria-selected="false" class="tab" data-tab="layer5">Layer 5</button>
+    <button type="button" role="tab" id="tab-layer6" aria-controls="layer6" aria-selected="false" class="tab" data-tab="layer6">Layer 6</button>
+    <button type="button" role="tab" id="tab-infra" aria-controls="infra" aria-selected="false" class="tab" data-tab="infra">Infra</button>
+    <button type="button" role="tab" id="tab-connect" aria-controls="connect" aria-selected="false" class="tab" data-tab="connect">Connections</button>
+    <button type="button" role="tab" id="tab-example" aria-controls="example" aria-selected="false" class="tab" data-tab="example">Example</button>
+  </div>
+
+  <main>
+
+    <section class="layer plain tab-panel" id="fit-together" role="tabpanel" aria-labelledby="tab-fit-together" tabindex="0">
+      <h2>How all the layers fit together</h2>
+      <div class="never-guess"><span class="ng-k">Recurring rule</span> never guess: a miss returns “unknown,” never an interpolated or nearby number</div>
+      <ol class="spine" aria-label="Pipeline stages, in order">
+        <li class="phase">Define</li>
+        <li class="stage s-define"><a href="#step1"><span class="badge">S1</span><span class="card"><span class="name">Customer request <small>Step 1</small></span><span class="q">What does the customer need?</span><span class="out">model + workload + validated requirements</span></span></a></li>
+        <li class="phase">Measure</li>
+        <li class="stage"><a href="#layer1"><span class="badge">L1</span><span class="card"><span class="name">Kernel characterization <small>Layer 1</small></span><span class="q">How do reusable compute units perform on each GPU?</span><span class="out">lookup.json per (card, engine)</span></span></a></li>
+        <li class="stage moe"><a href="#layer15"><span class="badge">1.5</span><span class="card"><span class="name">MoE routing capture <small>Layer 1.5</small> <em class="tag">MoE only</em></span><span class="q">How does real text route through this model's experts?</span><span class="out">routing profile per (model, corpus)</span></span></a></li>
+        <li class="stage"><a href="#layer2"><span class="badge">L2</span><span class="card"><span class="name">Model GPU execution plan <small>Layer 2</small></span><span class="q">Which backend per unit, and how long is the forward pass?</span><span class="out">per-unit backend plan + GPU time</span></span></a></li>
+        <li class="stage"><a href="#layer3"><span class="badge">L3</span><span class="card"><span class="name">Engine &amp; runtime overhead <small>Layer 3</small></span><span class="q">What does the serving engine add on top of GPU time?</span><span class="out">overhead decomposition</span></span></a></li>
+        <li class="phase">Predict</li>
+        <li class="stage"><a href="#layer4"><span class="badge">L4</span><span class="card"><span class="name">Serving performance <small>Layer 4</small></span><span class="q">What will customers see under real, dynamic traffic?</span><span class="out">p99 TTFT / TPOT, throughput, capacity</span></span></a></li>
+        <li class="phase">Optimize</li>
+        <li class="stage"><a href="#layer5"><span class="badge">L5</span><span class="card"><span class="name">Cost optimizer <small>Layer 5</small></span><span class="q">Which feasible plan is cheapest per token?</span><span class="out">optimized deployment plan</span></span></a></li>
+        <li class="phase">Deploy</li>
+        <li class="stage s-deploy"><a href="#layer6"><span class="badge">L6</span><span class="card"><span class="name">Deployment <small>Layer 6</small></span><span class="q">How do we run that exact plan?</span><span class="out">running Runara endpoint</span></span></a></li>
+      </ol>
+      <a class="infra-band" href="#infra"><span class="name">Parallel infrastructure workstream</span><span class="q">Hardware inventory, pricing, and reproducible execution images, running underneath every layer.</span></a>
+      <h3 style="border-top:none;padding-top:0;margin-top:1.4rem">In prose</h3>
+      <p><strong>Step 1</strong> captures what the customer actually needs — model,
+        precision preference, workload shape, and required service level — and turns it
+        into a discrete, feasible search space rather than an open-ended one.
+        <strong>Layer 1</strong> measures raw GPU kernel performance for isolated compute
+        units across every backend a serving engine could legally run, on one specific
+        card. <strong>Layer 1.5</strong> sits between Layer 1 and Layer 2 specifically for
+        Mixture-of-Experts models, capturing how real text actually routes through a
+        model's experts — because Layer 1 must never load model weights, and Layer 2 has
+        no workload/corpus input of its own. <strong>Layer 2</strong> decomposes a real
+        model into compute-unit signatures, matches each against Layer 1 (and Layer 1.5,
+        for MoE) at a given workload's regime, and produces a per-model GPU execution plan
+        with a predicted GPU time. <strong>Layer 3</strong> measures the additional time a
+        real serving engine's scheduling, batching, CPU-side work, and runtime overhead
+        add on top of that GPU execution plan. <strong>Layer 4</strong> integrates Layers 2
+        and 3 into a prediction of customer-facing metrics — p99 TTFT, p99 TPOT,
+        throughput, sustainable request rate, memory feasibility, supported context length
+        — for a complete configuration under realistic, dynamically-scheduled traffic.
+        <strong>Layer 5</strong> searches the whole space of valid configurations, discards
+        anything infeasible or too slow, and picks the lowest cost-per-token option that
+        still satisfies the customer's requirements. <strong>Layer 6</strong> takes that
+        chosen configuration and actually provisions, launches, health-checks, and exposes
+        it as a running endpoint — on the exact software stack the prediction was based on.
+        A parallel <strong>infrastructure workstream</strong> keeps hardware inventory,
+        pricing, and reproducible execution images current underneath all of this.</p>
+
+      
+
+      <h3 style="border-top:none;padding-top:0;margin-top:1.4rem">The principle that recurs at every layer: "never guess"</h3>
+      <ul>
+        <li><strong>A miss is not a zero.</strong> An uncharacterized shape returns
+          "unknown," never a number pulled from somewhere nearby.</li>
+        <li><strong>No interpolation across geometries or shapes.</strong> A missing shape
+          is never priced from a neighboring one — kernel crossovers can move up to 4×
+          between neighbors. Interpolation is allowed only <em>within</em> a regime Layer 1
+          has explicitly declared safe to interpolate inside.</li>
+        <li><strong>Every result carries an honest status</strong>, not a collapsed
+          yes/no — Layer 1 uses MEASURED / UNSUPPORTED / FAILED; Layer 2 uses resolved /
+          tie / miss / out_of_range / unsupported. "Didn't fit" is never silently folded
+          into "failed" or "zero."</li>
+        <li><strong>Ceilings and profiles are always measured on the real card</strong>,
+          never taken from a datasheet. A development/non-production card's numbers are
+          excluded by construction.</li>
+        <li><strong>The same discipline carries into Layer 5/6:</strong> the optimizer
+          only ever recommends "selected" over "default" execution when the improvement
+          clearly exceeds measurement noise, not whenever it merely looks better;
+          infeasible or unqualified configurations are excluded from ranking rather than
+          silently assumed to work.</li>
+      </ul>
+    </section>
+
+    <!-- ========================= STEP 1 ========================= -->
+    <section class="layer tab-panel" id="step1" role="tabpanel" aria-labelledby="tab-step1" tabindex="0" hidden>
+      <div class="eyebrow">Entry point</div>
+      <h2>Step 1 — Define the Customer Request</h2>
+      <p class="question"><b>What it does:</b> this is the entry point of the whole
+        system, and it exists to turn an open-ended question ("make this fast and cheap")
+        into a closed, discrete optimization problem Runara can actually search.</p>
+
+      <figure class="diagram">
+<div class="dgm-scroll"><svg class="dgm" viewBox="0 0 840 335" role="img" aria-label="Step 1: four customer inputs are narrowed into a discrete, feasible search space">
+<rect x="20" y="20" width="220" height="60" rx="10" class="d-box"/>
+<text x="130" y="45" text-anchor="middle" class="d-t">Model</text>
+<text x="130" y="66" text-anchor="middle" class="d-s">one supported model</text>
+<rect x="20" y="92" width="220" height="60" rx="10" class="d-box"/>
+<text x="130" y="117" text-anchor="middle" class="d-t">Precision</text>
+<text x="130" y="138" text-anchor="middle" class="d-s">Auto · BF16 · FP8 · NVFP4</text>
+<rect x="20" y="164" width="220" height="60" rx="10" class="d-box"/>
+<text x="130" y="189" text-anchor="middle" class="d-t">Workload</text>
+<text x="130" y="210" text-anchor="middle" class="d-s">Chat · RAG · Throughput · Batch</text>
+<rect x="20" y="236" width="220" height="60" rx="10" class="d-box"/>
+<text x="130" y="261" text-anchor="middle" class="d-t">Performance</text>
+<text x="130" y="282" text-anchor="middle" class="d-s">context, p99 TTFT/TPOT, rate</text>
+<polygon points="280,24 520,112 520,212 280,300" class="d-funnel"/>
+<path d="M242,50 L277,50" class="d-line accent" marker-end="url(#dar-a)"/>
+<path d="M242,122 L277,122" class="d-line accent" marker-end="url(#dar-a)"/>
+<path d="M242,194 L277,194" class="d-line accent" marker-end="url(#dar-a)"/>
+<path d="M242,266 L277,266" class="d-line accent" marker-end="url(#dar-a)"/>
+<text x="404" y="152" text-anchor="middle" class="d-t accent">Conditional</text>
+<text x="404" y="171" text-anchor="middle" class="d-t accent">narrowing</text>
+<text x="404" y="194" text-anchor="middle" class="d-s">each choice prunes the rest</text>
+<path d="M522,162 L557,162" class="d-line accent" marker-end="url(#dar-a)"/>
+<rect x="560" y="102" width="260" height="120" rx="12" class="d-box accent"/>
+<text x="690" y="135" text-anchor="middle" class="d-t accent">Discrete, feasible</text>
+<text x="690" y="154" text-anchor="middle" class="d-t accent">search space</text>
+<text x="690" y="181" text-anchor="middle" class="d-s">only combinations Runara</text>
+<text x="690" y="197" text-anchor="middle" class="d-s">can already evaluate</text>
+<text x="420" y="326" text-anchor="middle" class="d-k">e.g. context is offered only in validated steps: 8K · 16K · 32K · 64K · 128K · 192K</text>
+</svg></div>
+<figcaption>Step 1 narrows an open-ended request into a discrete, feasible search space.</figcaption>
+</figure>
+
+      <h3>User inputs</h3>
+      <ul>
+        <li><strong>Model</strong> — one of the supported models</li>
+        <li><strong>Precision</strong> — Auto, BF16, FP8, or NVFP4. "Auto" allows Runara
+          to search every validated precision rather than committing up front.</li>
+        <li><strong>Workload</strong> — Chat, RAG, High Throughput, or Batch. Each maps to
+          a predefined workload profile (the same shapes Layer 2/3/4 already characterize
+          against).</li>
+        <li><strong>Performance requirements</strong> — context length, p99 TTFT, p99
+          TPOT, and required throughput, as applicable to the chosen workload.</li>
+      </ul>
+
+      <h3>Why requirements must be feasible and discrete, not arbitrary</h3>
+      <p>The system deliberately does not accept open-ended performance targets. The
+        available choices are derived from Runara's own empirical measurements and from
+        configurations the platform can actually support — for example, context length is
+        exposed only in validated steps (8K, 16K, 32K, 64K, 128K, 192K), and TTFT/TPOT
+        choices reflect ranges that have actually been shown achievable for that model and
+        workload. This makes the interface conditional: selecting a model, precision,
+        workload, or context length narrows every remaining choice down to only the
+        combinations Runara already knows how to evaluate (and potentially deploy) — so
+        the customer can never ask for something the rest of the pipeline has no way to
+        honestly answer.</p>
+    </section>
+
+    <!-- ========================= LAYER 1 ========================= -->
+    <section class="layer tab-panel" id="layer1" role="tabpanel" aria-labelledby="tab-layer1" tabindex="0" hidden>
+      <div class="eyebrow">Per-GPU · Reusable operator shapes</div>
+      <h2>Layer 1 — Compute-Unit Characterization</h2>
+      <p class="question"><b>The question it answers, per GPU:</b> for this operator
+        shape and precision, which available kernel implementation is fastest, and how far
+        is that from the analytic best-possible (the "roofline")?</p>
+
+      <figure class="diagram">
+<div class="dgm-scroll"><svg class="dgm" viewBox="0 0 840 650" role="img" aria-label="Layer 1: seven verbs in order; inside run, every case is timed against every backend with one of three outcomes; measured points feed regimes and the roofline, which build lookup.json">
+<text x="63" y="22" text-anchor="middle" class="d-num">01</text>
+<text x="182" y="22" text-anchor="middle" class="d-num">02</text>
+<text x="301" y="22" text-anchor="middle" class="d-num">03</text>
+<text x="420" y="22" text-anchor="middle" class="d-num">04</text>
+<text x="539" y="22" text-anchor="middle" class="d-num">05</text>
+<text x="658" y="22" text-anchor="middle" class="d-num">06</text>
+<text x="777" y="22" text-anchor="middle" class="d-num">07</text>
+<rect x="10" y="30" width="106" height="44" rx="9" class="d-box"/>
+<text x="63" y="57" text-anchor="middle" class="d-vt">doctor</text>
+<rect x="129" y="30" width="106" height="44" rx="9" class="d-box"/>
+<text x="182" y="57" text-anchor="middle" class="d-vt">profile</text>
+<rect x="248" y="30" width="106" height="44" rx="9" class="d-box"/>
+<text x="301" y="57" text-anchor="middle" class="d-vt">backends</text>
+<rect x="367" y="30" width="106" height="44" rx="9" class="d-box accent"/>
+<text x="420" y="57" text-anchor="middle" class="d-vt accent">run (sweep)</text>
+<rect x="486" y="30" width="106" height="44" rx="9" class="d-box"/>
+<text x="539" y="57" text-anchor="middle" class="d-vt">defaults</text>
+<rect x="605" y="30" width="106" height="44" rx="9" class="d-box"/>
+<text x="658" y="57" text-anchor="middle" class="d-vt">validate</text>
+<rect x="724" y="30" width="106" height="44" rx="9" class="d-box green"/>
+<text x="777" y="57" text-anchor="middle" class="d-vt green">build-lookup</text>
+<path d="M117,52 L126,52" class="d-line" marker-end="url(#dar)"/>
+<path d="M236,52 L245,52" class="d-line" marker-end="url(#dar)"/>
+<path d="M355,52 L364,52" class="d-line" marker-end="url(#dar)"/>
+<path d="M474,52 L483,52" class="d-line" marker-end="url(#dar)"/>
+<path d="M593,52 L602,52" class="d-line" marker-end="url(#dar)"/>
+<path d="M712,52 L721,52" class="d-line" marker-end="url(#dar)"/>
+
+<path d="M420,74 L420,106" class="d-line accent dash"/>
+<rect x="10" y="106" width="820" height="262" rx="14" class="d-panel"/>
+<text x="28" y="130" class="d-lab">INSIDE run (sweep)</text>
+
+<rect x="30" y="148" width="240" height="96" rx="10" class="d-box"/>
+<text x="150" y="174" text-anchor="middle" class="d-t">Unit</text>
+<text x="150" y="196" text-anchor="middle" class="d-s">gemm · moe</text>
+<text x="150" y="212" text-anchor="middle" class="d-s">decode / prefill attention</text>
+<text x="150" y="228" text-anchor="middle" class="d-s">mla_decode / mla_prefill</text>
+<rect x="30" y="258" width="240" height="92" rx="10" class="d-box"/>
+<text x="150" y="284" text-anchor="middle" class="d-t">Backend adapters</text>
+<text x="150" y="306" text-anchor="middle" class="d-s">Triton · CUTLASS · FlashInfer</text>
+<text x="150" y="322" text-anchor="middle" class="d-s">Marlin · floor (baseline only)</text>
+
+<path d="M272,196 C296,196 296,232 318,232" class="d-line" marker-end="url(#dar)"/>
+<path d="M272,304 C296,304 296,268 318,268" class="d-line" marker-end="url(#dar)"/>
+
+<rect x="320" y="200" width="220" height="100" rx="10" class="d-box accent"/>
+<text x="430" y="227" text-anchor="middle" class="d-t accent">Timed case</text>
+<text x="430" y="249" text-anchor="middle" class="d-s d-mono">(geometry, work_size,</text>
+<text x="430" y="265" text-anchor="middle" class="d-s d-mono">precision) × backend</text>
+<text x="430" y="287" text-anchor="middle" class="d-k">one shared timing harness</text>
+
+<path d="M542,250 C566,250 566,176 587,176" class="d-line red" marker-end="url(#dar-r)"/>
+<path d="M542,250 C566,250 566,246 587,246" class="d-line amber" marker-end="url(#dar-m)"/>
+<path d="M542,250 C566,250 566,316 587,316" class="d-line green" marker-end="url(#dar-g)"/>
+<rect x="590" y="148" width="220" height="56" rx="10" class="d-box red"/>
+<text x="700" y="172" text-anchor="middle" class="d-t red d-mono">FAILED</text>
+<text x="700" y="192" text-anchor="middle" class="d-s">a bug to fix, not a data point</text>
+<rect x="590" y="218" width="220" height="56" rx="10" class="d-box amber"/>
+<text x="700" y="242" text-anchor="middle" class="d-t amber d-mono">UNSUPPORTED</text>
+<text x="700" y="262" text-anchor="middle" class="d-s">engine's own refusal reason</text>
+<rect x="590" y="288" width="220" height="56" rx="10" class="d-box green"/>
+<text x="700" y="312" text-anchor="middle" class="d-t green d-mono">MEASURED</text>
+<text x="700" y="332" text-anchor="middle" class="d-s">real latency number</text>
+
+<path d="M700,344 L700,407" class="d-line green" marker-end="url(#dar-g)"/>
+<path d="M700,388 L200,388 L200,407" class="d-line green" marker-end="url(#dar-g)"/>
+<text x="450" y="403" text-anchor="middle" class="d-k">every measured point</text>
+
+<rect x="10" y="410" width="380" height="96" rx="10" class="d-box"/>
+<text x="200" y="436" text-anchor="middle" class="d-t">Regimes</text>
+<text x="200" y="458" text-anchor="middle" class="d-s">collapse_regimes merges adjacent points</text>
+<text x="200" y="474" text-anchor="middle" class="d-s">that share the same winning backend</text>
+<text x="200" y="492" text-anchor="middle" class="d-k">derived from the data, specific to each card</text>
+<rect x="450" y="410" width="380" height="96" rx="10" class="d-box"/>
+<text x="640" y="436" text-anchor="middle" class="d-t">Roofline (per case)</text>
+<text x="640" y="458" text-anchor="middle" class="d-s d-mono">t_ideal = max(flops/peak_flops, bytes/peak_bw)</text>
+<text x="640" y="476" text-anchor="middle" class="d-s d-mono">efficiency = t_ideal / t_best</text>
+<text x="640" y="494" text-anchor="middle" class="d-k">ceilings measured on this card, not a datasheet</text>
+
+<path d="M200,506 L200,539" class="d-line green" marker-end="url(#dar-g)"/>
+<path d="M640,506 L640,539" class="d-line green" marker-end="url(#dar-g)"/>
+<rect x="110" y="542" width="620" height="84" rx="12" class="d-box green"/>
+<text x="420" y="568" text-anchor="middle" class="d-t green d-mono">results/&lt;hw&gt;/&lt;stack&gt;/lookup.json</text>
+<text x="420" y="590" text-anchor="middle" class="d-s">winner · latency · efficiency vs. roofline · regime range · engine default</text>
+<text x="420" y="608" text-anchor="middle" class="d-s">ties become tie-sets · floors never win · dev hardware fails closed</text>
+<text x="420" y="644" text-anchor="middle" class="d-k">written by build-lookup (verb 07), one table per (card, engine)</text>
+</svg></div>
+<figcaption>Layer 1’s seven verbs, the three-outcome sweep, and the resulting lookup.json.</figcaption>
+</figure>
+
+      <h3>Units and backends</h3>
+      <p>A <strong>unit</strong> is one operator class:</p>
+      <ul>
+        <li><strong>gemm</strong> — dense projections (e.g. QKV, up/down projections)</li>
+        <li><strong>moe</strong> — grouped-expert GEMM (mixture-of-experts routing + compute)</li>
+        <li><strong>decode_attention</strong> / <strong>prefill_attention</strong> —
+          standard attention, split by phase because they're different operators with
+          different cost shapes</li>
+        <li><strong>mla_decode</strong> / <strong>mla_prefill</strong> — DeepSeek-style
+          multi-head latent attention — a genuinely different operator, not a variant of
+          standard attention</li>
+        <li><strong>KV-cache / memory operations</strong> and <strong>multi-GPU
+          communication</strong> — additional core units named in the master plan alongside
+          the above</li>
+      </ul>
+      <p>Each unit declares its own <strong>signature</strong> (the shape parameters that
+        define a case) and a set of <strong>backend adapters</strong> — one per concrete
+        kernel implementation (e.g. Triton, CUTLASS, FlashInfer, Marlin, or a naive "floor"
+        implementation used purely as a baseline). Units are purely declarative; the actual
+        timing harness is one shared piece of code, specifically so no individual unit can
+        quietly reinvent its own warmup/measurement methodology and drift from everyone
+        else's. For the initial MVP, this layer is scoped to characterization and backend
+        selection, not to developing new kernels of its own.</p>
+
+      <h3>What a sweep produces</h3>
+      <p><code>layer1 run --stack &lt;engine&gt; --sweep &lt;config&gt;.json</code> expands
+        a config into <strong>cases</strong> — (geometry, work_size, precision) points —
+        and runs every registered backend against each, recording exactly one of three
+        outcomes per (case, backend):</p>
+      <div class="chips">
+        <span class="chip chip-green">MEASURED — real latency number</span>
+        <span class="chip chip-amber">UNSUPPORTED — engine's own stated reason it refused</span>
+        <span class="chip chip-red">FAILED — a bug to go fix, not a data point</span>
+      </div>
+      <p>Results stream to a partial file, promoted atomically only once the sweep
+        finishes, and merge by (case_key, backend) across runs — so a sweep can be resumed,
+        refined with a boundary-bisection pass, or extended without re-measuring everything
+        that's already known.</p>
+
+      <h3>The roofline</h3>
+      <p>For every case, an analytic ceiling is computed — <code>t_ideal = max(flops /
+        peak_flops, bytes / peak_bandwidth)</code> — from this specific card's own
+        <em>measured</em> peak compute and bandwidth (from <code>layer1 profile</code>),
+        never a vendor datasheet number. <code>efficiency = t_ideal / t_best</code> is the
+        real payload of this whole layer: "Triton won" and "Triton won running at 50% of
+        the machine's actual ceiling" lead to very different conclusions about whether
+        there's more performance left on the table.</p>
+
+      <h3>Regimes: axes vs. conditions</h3>
+      <p>A unit's signature has one continuously-varying <strong>axis</strong> (e.g.
+        kv_length for decode attention — always a single scalar quantity; no unit in this
+        codebase varies two axes simultaneously) and zero or more <strong>conditions</strong>
+        — values held fixed and matched by exact equality only (e.g. active_sequences,
+        captured_max_seq_len, or MoE's skew_target / active_target).</p>
+      <p><code>collapse_regimes</code> walks the sweep's measured points along the axis and
+        merges adjacent points that share the same winning backend into one
+        <strong>regime</strong>, with an explicit bracketed range. A regime is always
+        <em>derived from the data</em>, never declared in advance, because the boundary
+        between two kernels winning is specific to each card. A regime guarantees a stable
+        <em>winning backend</em> across its range — not stable latency (decode attention's
+        worst in-regime spread measured so far is 335×).</p>
+      <div class="callout">
+        <strong>Why active_sequences is a condition, not an axis</strong> (a specific
+        design point worth calling out): batch size/occupancy is treated as an independent
+        knob that can't be collapsed away as something co-derived from kv_length, and an
+        earlier attempt to fold it into a combined axis produced zero usable regimes. The
+        practical consequence: the swept grid for decode attention / MLA is sparse in two
+        dimensions (8 batch sizes × 5 KV lengths = 40 points per geometry/precision), and a
+        batch size that isn't exactly one of the 8 swept values (powers of two, 1 through
+        128) is refused outright — never interpolated, never substituted with a nearby
+        value. This is a deliberate, examined choice, not an oversight; there is no
+        precedent anywhere in the codebase for genuine two-dimensional interpolation.
+      </div>
+
+      <h3>The verbs, in order</h3>
+      <ol class="verbs">
+        <li><div><code>doctor</code> — can this box measure at all, and will its numbers be
+          comparable to anyone else's? (checks the installed stack against a pinned
+          reference)</div></li>
+        <li><div><code>profile</code> — measures this card's own bandwidth/compute
+          ceilings</div></li>
+        <li><div><code>backends</code> — asks the engine's own legality predicates which
+          backends can even run here, instead of hand-maintaining a dispatch table that
+          goes stale</div></li>
+        <li><div><code>run</code> — the sweep itself</div></li>
+        <li><div><code>defaults</code> — what would the engine have picked on its own?
+          (used to compute "default regret" — the measurable value of doing this
+          characterization at all)</div></li>
+        <li><div><code>validate</code> — gates hard on schema/methodology-drift errors;
+          warns on noise/coverage issues</div></li>
+        <li><div><code>build-lookup</code> — produces the final table</div></li>
+      </ol>
+
+      <h3>build-lookup and the final artifact</h3>
+      <p><code>build-lookup</code> turns raw evidence into
+        <code>results/&lt;hardware_id&gt;/&lt;stack&gt;/lookup.json</code> — one table per
+        (card, engine) — handling four failure modes a naive "take the minimum" would get
+        wrong:</p>
+      <ul>
+        <li><strong>Ties</strong> — a winner is only declared if it beats the runner-up by
+          measurement spread plus a 2% margin; otherwise a tie-set is emitted instead of an
+          arbitrary pick.</li>
+        <li><strong>Floor kernels winning by survivorship</strong> — on cards where real
+          kernels are unavailable, a naive/floor implementation might technically be the
+          only one that ran. Floors are reported purely as a comparison baseline and are
+          never eligible to "win" a cell.</li>
+        <li><strong>Regimes are derived, not assumed</strong> — see above.</li>
+        <li><strong>Development hardware leaking into production numbers</strong> — fails
+          closed against a hardware-roles file rather than trusting a flag.</li>
+      </ul>
+      <p>The final <code>lookup.json</code> holds, per (operator signature, regime,
+        precision): the winning backend, its measured latency, its efficiency vs. the
+        roofline, the regime's bracketed range, and what the engine's own default would
+        have picked for comparison.</p>
+
+      <h3>Output layout</h3>
+      <p><code>results/&lt;hardware_id&gt;/hardware_profile.json</code> (card-level
+        ceilings), and
+        <code>results/&lt;hardware_id&gt;/&lt;stack&gt;/{raw/*.jsonl, defaults/*.json,
+        lookup.json}</code> per serving engine (vllm / sglang / trtllm) — separated by
+        engine because the engine itself decides which backend adapters are even eligible
+        to run, and because the different stacks pin conflicting dependency versions.</p>
+      <div class="callout">
+        <strong>Note on prioritization, not scope:</strong> the small set of MVP models is
+        used only to decide which geometry/work-size regimes matter most to characterize
+        first — the characterization itself is designed around reusable operator shapes,
+        not around specific model names, so it carries forward to new models for free
+        wherever their shapes already overlap the swept grid.
+      </div>
+    </section>
+
+    <!-- ========================= LAYER 1.5 ========================= -->
+    <section class="layer tab-panel" id="layer15" role="tabpanel" aria-labelledby="tab-layer15" tabindex="0" hidden>
+      <div class="eyebrow">Per-(model, corpus) · MoE only</div>
+      <h2>Layer 1.5 — MoE Routing-Regime Capture</h2>
+      <p class="question"><b>The question it answers:</b> for a Mixture-of-Experts model,
+        how does real text actually distribute load across experts — and is that
+        distribution uniform enough for Layer 1's own MoE measurements to still apply?</p>
+
+      <figure class="diagram">
+<div class="dgm-scroll"><svg class="dgm" viewBox="0 0 840 280" role="img" aria-label="Layer 1.5: a real checkpoint and a real text corpus feed the capture step, which produces a routing profile that Layer 2 consumes">
+<rect x="10" y="24" width="230" height="64" rx="10" class="d-box"/>
+<text x="125" y="51" text-anchor="middle" class="d-t">Real model checkpoint</text>
+<text x="125" y="72" text-anchor="middle" class="d-s">loaded with weights</text>
+<rect x="10" y="124" width="230" height="64" rx="10" class="d-box"/>
+<text x="125" y="151" text-anchor="middle" class="d-t">Real text corpus</text>
+<text x="125" y="172" text-anchor="middle" class="d-s">actual prose, not random IDs</text>
+<path d="M242,56 C270,56 272,92 297,92" class="d-line" marker-end="url(#dar)"/>
+<path d="M242,156 C270,156 272,120 297,120" class="d-line" marker-end="url(#dar)"/>
+<rect x="300" y="56" width="240" height="100" rx="12" class="d-box purple"/>
+<text x="420" y="85" text-anchor="middle" class="d-t purple">Layer 1.5 capture</text>
+<text x="420" y="108" text-anchor="middle" class="d-s">run the corpus through the model,</text>
+<text x="420" y="124" text-anchor="middle" class="d-s">record true expert routing</text>
+<path d="M542,106 L597,106" class="d-line purple" marker-end="url(#dar-p)"/>
+<rect x="600" y="66" width="230" height="80" rx="10" class="d-box"/>
+<text x="715" y="93" text-anchor="middle" class="d-t">Routing profile</text>
+<text x="715" y="114" text-anchor="middle" class="d-s">per (model, corpus)</text>
+<text x="715" y="130" text-anchor="middle" class="d-k">not per GPU card</text>
+<path d="M715,146 L715,195" class="d-line purple" marker-end="url(#dar-p)"/>
+<rect x="600" y="198" width="230" height="64" rx="10" class="d-box"/>
+<text x="715" y="224" text-anchor="middle" class="d-t">Layer 2</text>
+<text x="715" y="245" text-anchor="middle" class="d-s d-mono">--routing-profile</text>
+<text x="10" y="226" class="d-k">Why it exists: Layer 1 never loads weights; Layer 2 has no corpus.</text>
+<text x="10" y="246" class="d-k">Assuming uniform routing got real MoE cost wrong (measured 0.52× of prediction).</text>
+</svg></div>
+<figcaption>Layer 1.5 closes the gap between Layer 1 (no weights) and Layer 2 (no corpus).</figcaption>
+</figure>
+
+      <h3>Why this layer had to exist at all</h3>
+      <p>Layer 2 was found to assume <code>skew_target = 1.0</code> (perfectly uniform
+        expert routing) when matching a model's MoE operator against Layer 1's lookup
+        table. Real prose does not route uniformly — tokens cluster toward certain experts
+        far more than random token IDs do. This was confirmed as the root cause of a real
+        transfer-error bug: MoE compute measured roughly 0.52× what Layer 1's
+        uniform-routing assumption predicted, because random-token-id prompts used for
+        some characterization work under-activate experts compared to real text.</p>
+      <p>The fix couldn't live in Layer 1 or Layer 2 directly, by design rather than
+        oversight:</p>
+      <ul>
+        <li><strong>Layer 1 must never load a model's actual checkpoint</strong> — it
+          characterizes reusable operator shapes, independent of any specific model's
+          weights, so it has no way to know how a specific model's router actually behaves
+          on real text.</li>
+        <li><strong>Layer 2 has no workload/corpus input of its own</strong> — it matches
+          shapes against Layer 1's tables, but doesn't run real text through a model to
+          observe routing behavior.</li>
+      </ul>
+      <p>Layer 1.5 sits between the two specifically to close this gap: it loads the real
+        model, runs a real text corpus through it, and captures how routing actually
+        behaves — once per (model, corpus) pair, not per hardware card, since routing
+        behavior depends on the model's weights and the text, not on which GPU runs it.</p>
+
+      <h3>What it captures and how Layer 2 consumes it</h3>
+      <p>Modules: capture, agree, cli, corpus, probe, profile, stats, plus per-engine hooks
+        for vLLM, SGLang, and TensorRT-LLM. The output is a routing profile keyed by
+        (model, corpus), which Layer 2 consumes explicitly via a
+        <code>--routing-profile</code> input rather than assuming uniformity.</p>
+      <p>Already-captured profiles exist for OLMoE, DeepSeek-V2-Lite, and Qwen3-30B-A3B,
+        including cross-engine and cross-precision agreement checks (do vLLM and SGLang, or
+        fp8 and bf16, actually observe the same routing behavior for the same model and
+        text?) — stored under a dedicated agreement-profiles directory.</p>
+
+      <h3>Guarding against silent failure</h3>
+      <p>This layer explicitly guards against several ways a routing capture could look
+        successful while actually measuring the wrong thing: subprocess isolation silently
+        losing the instrumentation hooks partway through a run; warmup passes (which don't
+        reflect steady-state routing) masquerading as real measurements; and a mismatch
+        between the number of tokens requested for a probe and the number actually
+        delivered by the engine, which would otherwise quietly corrupt the captured skew
+        statistics without any visible error.</p>
+    </section>
+
+    <!-- ========================= LAYER 2 ========================= -->
+    <section class="layer tab-panel" id="layer2" role="tabpanel" aria-labelledby="tab-layer2" tabindex="0" hidden>
+      <div class="eyebrow">Per (model, GPU, precision, workload)</div>
+      <h2>Layer 2 — Model-Level GPU Execution Plan</h2>
+      <p class="question"><b>The question it answers:</b> which backend should each
+        compute unit use, how long will the forward pass take, and which units dominate
+        it?</p>
+
+      <figure class="diagram">
+<div class="dgm-scroll"><svg class="dgm" viewBox="0 0 840 460" role="img" aria-label="Layer 2: extract feeds resolve, which reads Layer 1 and Layer 1.5 and produces a plan; every unit gets one of five statuses; misses and out-of-range cells become new Layer 1 sweeps">
+<rect x="240" y="16" width="170" height="46" rx="10" class="d-box"/>
+<text x="325" y="44" text-anchor="middle" class="d-t">Layer 1 lookup</text>
+<rect x="430" y="16" width="170" height="46" rx="10" class="d-box purple"/>
+<text x="515" y="44" text-anchor="middle" class="d-t purple">Layer 1.5 profile</text>
+<path d="M325,62 L384,105" class="d-line" marker-end="url(#dar)"/>
+<path d="M515,62 L456,105" class="d-line purple" marker-end="url(#dar-p)"/>
+<text x="608" y="44" class="d-k">MoE only</text>
+
+<rect x="10" y="108" width="210" height="72" rx="10" class="d-box"/>
+<text x="115" y="137" text-anchor="middle" class="d-t">extract</text>
+<text x="115" y="159" text-anchor="middle" class="d-s">config → unit signatures</text>
+<rect x="290" y="108" width="260" height="72" rx="10" class="d-box accent"/>
+<text x="420" y="137" text-anchor="middle" class="d-t accent d-mono">match / resolve()</text>
+<text x="420" y="159" text-anchor="middle" class="d-s">best backend + latency per unit</text>
+<rect x="620" y="108" width="210" height="72" rx="10" class="d-box green"/>
+<text x="725" y="137" text-anchor="middle" class="d-t green">plan</text>
+<text x="725" y="159" text-anchor="middle" class="d-s">per-unit backend + total_us</text>
+<path d="M222,144 L287,144" class="d-line" marker-end="url(#dar)"/>
+<path d="M552,144 L617,144" class="d-line green" marker-end="url(#dar-g)"/>
+<text x="725" y="203" text-anchor="middle" class="d-k">→ Layer 3 · Layer 5</text>
+
+<path d="M420,180 L420,222" class="d-line"/>
+<path d="M88,222 L752,222" class="d-line"/>
+<text x="430" y="206" class="d-k">one status per unit</text>
+<path d="M88,222 L88,257" class="d-line green" marker-end="url(#dar-g)"/>
+<path d="M254,222 L254,257" class="d-line amber" marker-end="url(#dar-m)"/>
+<path d="M420,222 L420,257" class="d-line red" marker-end="url(#dar-r)"/>
+<path d="M586,222 L586,257" class="d-line red" marker-end="url(#dar-r)"/>
+<path d="M752,222 L752,257" class="d-line amber" marker-end="url(#dar-m)"/>
+
+<rect x="11" y="260" width="154" height="66" rx="10" class="d-box green"/>
+<text x="88" y="287" text-anchor="middle" class="d-t green d-mono">resolved</text>
+<text x="88" y="308" text-anchor="middle" class="d-s">use as-is</text>
+<rect x="177" y="260" width="154" height="66" rx="10" class="d-box amber"/>
+<text x="254" y="287" text-anchor="middle" class="d-t amber d-mono">tie</text>
+<text x="254" y="308" text-anchor="middle" class="d-s">pick on other grounds</text>
+<rect x="343" y="260" width="154" height="66" rx="10" class="d-box red"/>
+<text x="420" y="287" text-anchor="middle" class="d-t red d-mono">miss</text>
+<text x="420" y="308" text-anchor="middle" class="d-s">never swept: sweep it</text>
+<rect x="509" y="260" width="154" height="66" rx="10" class="d-box red"/>
+<text x="586" y="287" text-anchor="middle" class="d-t red d-mono">out_of_range</text>
+<text x="586" y="308" text-anchor="middle" class="d-s">outside swept grid</text>
+<rect x="675" y="260" width="154" height="66" rx="10" class="d-box amber"/>
+<text x="752" y="287" text-anchor="middle" class="d-t amber d-mono">unsupported</text>
+<text x="752" y="308" text-anchor="middle" class="d-s">every backend refused</text>
+
+<rect x="11" y="380" width="300" height="64" rx="10" class="d-box dash"/>
+<text x="161" y="406" text-anchor="middle" class="d-t">total_us is a lower bound</text>
+<text x="161" y="427" text-anchor="middle" class="d-s">norms, rotary, lm_head, sampling unmodeled</text>
+
+<path d="M420,326 L420,377" class="d-line red dash" marker-end="url(#dar-r)"/>
+<path d="M586,326 L586,377" class="d-line red dash" marker-end="url(#dar-r)"/>
+<rect x="340" y="380" width="290" height="64" rx="10" class="d-box"/>
+<text x="485" y="406" text-anchor="middle" class="d-t">gaps → new sweep configs</text>
+<text x="485" y="427" text-anchor="middle" class="d-s">work-size grid read back from lookup.json</text>
+<path d="M632,412 L667,412" class="d-line red dash" marker-end="url(#dar-r)"/>
+<rect x="670" y="388" width="160" height="48" rx="10" class="d-box"/>
+<text x="750" y="417" text-anchor="middle" class="d-t">Layer 1</text>
+</svg></div>
+<figcaption>Layer 2’s extract → resolve() → plan pipeline, the five resolve statuses, and the gaps loop back to Layer 1.</figcaption>
+</figure>
+
+      <h3>Pipeline</h3>
+      <ol class="verbs">
+        <li><div><strong>extract</strong> — turns a model's config into compute-unit
+          signatures, plus how many times each occurs per forward pass</div></li>
+        <li><div><strong>match / resolve()</strong> — takes those signatures plus a
+          workload (and, for MoE models, Layer 1.5's routing profile) and returns Layer
+          1's best backend and latency for each, per unit</div></li>
+        <li><div><strong>gaps</strong> — every miss becomes a concrete Layer 1 sweep
+          config that would close it, with the work-size grid read directly back out of
+          lookup.json so the gap-emitter can never drift out of sync with Layer 1's actual
+          grid</div></li>
+      </ol>
+
+      <h3>Workload</h3>
+      <p>This is the dynamic regime Layer 1's tables are indexed on. For prefill:
+        chunk_length (new tokens), kv_prefix_length (already-cached tokens),
+        prefill_sequences. For decode: active_sequences (concurrent sequences) and
+        kv_length. Plus engine-configuration fields that change <em>what</em> runs rather
+        than traffic itself (max_model_len, cuda_graphs). Prefill and decode are treated as
+        genuinely distinct operators that can even have different winning backends — in
+        principle a deployment could disaggregate them onto different hardware entirely.</p>
+
+      <h3>resolve()</h3>
+      <p>Walks a model's extracted signatures, looks each up against a Lookup (Layer 1's
+        table, informed by Layer 1.5 for MoE skew) at the workload's regime, and returns a
+        <strong>plan</strong>: per-unit backend, latency, and a total_us lower bound,
+        computed as:</p>
+      <p style="font-family:'IBM Plex Mono';background:var(--code-bg);padding:.8rem 1rem;
+         border-radius:.5rem;font-size:.86rem;overflow-x:auto">total_us = SUM over units:
+        occurrences × latency(matched signature, regime)</p>
+      <p>Getting the per-forward-pass occurrence count wrong (e.g. treating "per layer" as
+        "per model") silently scales the entire prediction by that factor — so extract is
+        careful to always report occurrences per single forward pass.</p>
+
+      <h3>Five statuses, five different next actions</h3>
+      <div class="chips">
+        <span class="chip chip-green">resolved — use it as-is</span>
+        <span class="chip chip-amber">tie — pick on other grounds</span>
+        <span class="chip chip-red">miss — this was never swept, go sweep it</span>
+        <span class="chip chip-red">out_of_range — characterized, but outside the swept grid</span>
+        <span class="chip chip-amber">unsupported — every backend refused; not slow, impossible</span>
+      </div>
+      <p><code>miss</code> and <code>out_of_range</code> are deliberately kept distinct
+        because conflating them once caused the gap-emitter to propose re-sweeping
+        hundreds of cases the card already had fully characterized.</p>
+
+      <h3>Interpolation rules — the strictest part of the whole system</h3>
+      <p><strong>Never</strong> across geometries or shapes — a missing shape is never
+        priced from a measured neighbor, because kernel crossovers can move up to 4×
+        between adjacent shapes. <strong>Only</strong> within a single regime, and only
+        when Layer 1's own data explicitly marks that regime safe to interpolate inside,
+        using the regime's own measured interior points.</p>
+
+      <h3>Selectors and exec_config_from_plan</h3>
+      <p>Once resolve() has picked a winning backend per unit, those choices have to
+        become concrete engine flags. <code>exec_config_from_plan()</code> maps Layer 1's
+        adapter names onto a serving engine's own closed set of CLI values (e.g.
+        <code>--linear-backend</code>, <code>--moe-backend</code>,
+        <code>--attention-backend</code>, <code>--kv-cache-dtype</code>), validated against
+        that engine's own accepted value sets — turning an abstract plan into a literal,
+        pasteable server launch command.</p>
+      <p>One real constraint surfaces here: some flags are global — linear_backend applies
+        to every dense projection in the model at once — so if Layer 1's data shows
+        different winners at different matrix sizes within the same model, a single flag
+        genuinely cannot express both choices simultaneously. This conflict is recorded
+        explicitly (as "unmapped") rather than silently picking one winner and hiding the
+        discrepancy.</p>
+
+      <h3>What the sum deliberately omits</h3>
+      <p>The per-unit sum is explicitly a <strong>lower bound</strong>. Norms, rotary
+        embeddings, the SwiGLU dense path, residual adds, the router/gate GEMM, lm_head,
+        sampling, kernel-launch gaps, and layer-boundary cache effects are all named as
+        unmodeled. This gap is exactly what Layer 3's validation step exists to measure —
+        never to tune away or paper over.</p>
+
+      <h3>Validation</h3>
+      <p>Layer 2 runs the real model in vLLM (or TensorRT-LLM) with the selected config,
+        profiles it, isolates GPU execution time from serving overhead, and compares
+        predicted vs. measured GPU time per unit — across two arms: <strong>selected</strong>
+        (Layer 1's winning backends forced on) and <strong>default</strong> (let the engine
+        choose on its own, priced at the engine-default's own measured latency — never at
+        the forced winner's latency, specifically to avoid conflating "the engine picked
+        the wrong kernel" with "the prediction itself is wrong"). This validates whether
+        the reusable, model-agnostic compute-unit characterization correctly transfers to
+        a complete, real model.</p>
+
+      <h3>What it hands to Layer 3</h3>
+      <p>A <strong>plan</strong>: per-unit backends, a predicted total GPU time, and the
+        concrete mapped engine flags — ready to be launched as a real server and measured
+        end-to-end. Downstream, this plan is also what Layer 5's optimizer catalog ingests
+        (via a versioned export contract) once it has been validated.</p>
+    </section>
+
+    <!-- ========================= LAYER 3 ========================= -->
+    <section class="layer tab-panel" id="layer3" role="tabpanel" aria-labelledby="tab-layer3" tabindex="0" hidden>
+      <div class="eyebrow">Engine + runtime, measured on top of the GPU plan</div>
+      <h2>Layer 3 — Serving Engine &amp; Runtime Characterization</h2>
+      <p class="question"><b>The question it answers:</b> given a plan, what additional
+        behavior does the serving engine and runtime itself introduce on top of raw GPU
+        execution — and precisely where does that extra time actually go?</p>
+
+      <figure class="diagram">
+<div class="dgm-scroll"><svg class="dgm" viewBox="0 0 840 385" role="img" aria-label="Layer 3: wall-clock time is split into engine overhead plus busy GPU time, and busy time into covered and uncovered kernels; covered kernels go through the transfer-error check">
+<defs><clipPath id="l3clip"><rect x="40" y="136" width="760" height="56" rx="10"/></clipPath></defs>
+<rect x="120" y="16" width="240" height="52" rx="10" class="d-box"/>
+<text x="240" y="38" text-anchor="middle" class="d-t">Wall-clock pass</text>
+<text x="240" y="57" text-anchor="middle" class="d-s">unprofiled, end to end</text>
+<rect x="560" y="16" width="240" height="52" rx="10" class="d-box"/>
+<text x="680" y="38" text-anchor="middle" class="d-t">CUDA kernel trace</text>
+<text x="680" y="57" text-anchor="middle" class="d-s">kernel durations only</text>
+
+<path d="M40,112 L40,104 L670,104 M690,104 L800,104 L800,112" class="d-brace"/>
+<text x="48" y="98" class="d-lab">E2E (WALL-CLOCK)</text>
+<path d="M240,68 L240,101" class="d-line" marker-end="url(#dar)"/>
+<path d="M300,130 L300,122 L800,122 L800,130" class="d-brace"/>
+<text x="308" y="117" class="d-lab">BUSY = UNION OF KERNEL INTERVALS, NOT A SUM</text>
+<path d="M680,68 L680,119" class="d-line" marker-end="url(#dar)"/>
+
+<g clip-path="url(#l3clip)">
+<rect x="40" y="136" width="260" height="56" class="d-seg"/>
+<rect x="300" y="136" width="290" height="56" class="d-seg green"/>
+<rect x="590" y="136" width="210" height="56" class="d-seg amber"/>
+</g>
+<rect x="40" y="136" width="760" height="56" rx="10" class="d-outline"/>
+<text x="170" y="160" text-anchor="middle" class="d-t">engine overhead</text>
+<text x="170" y="180" text-anchor="middle" class="d-s">scheduling · batching · CPU</text>
+<text x="445" y="160" text-anchor="middle" class="d-t green">covered</text>
+<text x="445" y="180" text-anchor="middle" class="d-s">Layer 1-characterized kernels</text>
+<text x="695" y="160" text-anchor="middle" class="d-t amber">uncovered</text>
+<text x="695" y="180" text-anchor="middle" class="d-s">norms · rotary · lm_head</text>
+
+<path d="M445,192 L445,235" class="d-line red" marker-end="url(#dar-r)"/>
+<rect x="245" y="238" width="400" height="100" rx="12" class="d-box red"/>
+<text x="445" y="264" text-anchor="middle" class="d-t red">Transfer-error check</text>
+<text x="445" y="286" text-anchor="middle" class="d-s">does an isolated kernel cost the same inside</text>
+<text x="445" y="302" text-anchor="middle" class="d-s">a real, live forward pass?</text>
+<text x="445" y="324" text-anchor="middle" class="d-k">e.g. 36.9 µs alone vs. ~111 µs/layer in-pass</text>
+<text x="420" y="372" text-anchor="middle" class="d-k">Every report names the exact adapter responsible, never just the unit.</text>
+</svg></div>
+<figcaption>Layer 3’s three-term decomposition (e2e = overhead + busy) and the transfer-error check.</figcaption>
+</figure>
+
+      <h3>The trap this layer exists to avoid</h3>
+      <p>The naive approach — overhead = measured − Layer 2's prediction — is wrong,
+        because Layer 2's prediction is a lower bound by design (it omits norms, rotary,
+        lm_head, sampling, and more). Taking that naive residual would conflate real,
+        legitimate uncovered GPU work with actual engine overhead, unfairly blaming the
+        engine for arithmetic the model itself requires regardless of engine quality.</p>
+
+      <h3>The three-term decomposition it uses instead</h3>
+      <p>From two separately measured boundaries — an unprofiled wall-clock pass, and a
+        separate CUDA trace for kernel durations only (profiling itself distorts host-side
+        timing; an 8-step decode window was confirmed to take 6.5 seconds of profiled CPU
+        time against only 93 milliseconds of actual CUDA time) — Layer 3 computes:</p>
+      <p style="font-family:'IBM Plex Mono';background:var(--code-bg);padding:.8rem 1rem;
+         border-radius:.5rem;font-size:.86rem">e2e = overhead + busy<br>busy = covered
+         (Layer-1-characterized kernels) + uncovered (everything else)</p>
+      <p><code>busy</code> is the <strong>union</strong> of kernel time intervals, not a
+        naive sum — concurrent CUDA streams can overlap, so simply adding up durations
+        would overstate actual device-busy time. The model, GPU, precision, workload
+        trace, and execution configuration are all kept exactly as Layer 2 selected them —
+        this layer only ever adds a characterization of what the engine/runtime
+        contributes on top, it never redefines the workload itself, so Layer 2 and Layer 3
+        numbers stay directly comparable.</p>
+
+      <h3>Transfer error — the central finding this layer produces</h3>
+      <p>Does Layer 1's isolated kernel measurement actually predict that same kernel's
+        cost once it's running <em>inside</em> a real, live forward pass? Confirmed
+        failures have gone both directions:</p>
+      <ul>
+        <li>A pure measurement bug (167µs claimed vs. 20µs real — caused by timing
+          host-side dispatch instead of the actual device execution)</li>
+        <li>A genuine scheme mismatch that isn't a bug at all (36.9µs measured alone vs.
+          roughly 111µs/layer inside a real pass — split-KV-plus-reduction simply doesn't
+          cost the same amount composed into a pipeline as it does standing alone)</li>
+        <li>At least one still-open, unresolved gap (a 6.05× discrepancy on one MLA
+          attention adapter)</li>
+      </ul>
+      <p>Every report names the specific <em>adapter</em> responsible, never just the unit
+        — "attention is 3× off" isn't actionable on its own, but naming the exact file is.</p>
+
+      <h3>Comparing engines fairly</h3>
+      <p>The rule is "compare like with like, or don't compare": an engine whose plan
+        couldn't price every unit that the other engines in the comparison priced is
+        <strong>withheld from the ranking entirely</strong>, not simply ranked last.
+        Otherwise an engine that happens to be missing coverage for its own largest
+        operator (for example, an engine that never swept MLA at all) would look
+        artificially fastest purely by omission, not by actually being faster.</p>
+
+      <h3>Shared plumbing: engines/shared.py</h3>
+      <p>Holds the plan-to-engine-flags translation and the profiled-window-shaping logic
+        exactly once, so each engine's runner (vLLM, SGLang) doesn't reimplement — and
+        subtly diverge from — the same underlying logic. <code>exec_config_from_plan</code>
+        here deliberately performs <strong>no</strong> name or value translation of the
+        selector the plan carries: "the knob comes from Layer 1, not from a table here."
+        This is the exact structural gap this effort's own work found and had to patch
+        locally inside the SGLang runner this session — a vLLM-flavored backend adapter's
+        uppercase selector value (FLASHINFER) was leaking through unmodified into SGLang's
+        own CLI builder, which only accepts the lowercase spelling.</p>
+
+      <h3>phase_window.py's trace-consistency check</h3>
+      <p>A profiled measurement window is only trusted if the <em>actual</em> number of
+        forward passes it contains — counted from a real per-engine marker kernel in the
+        trace — matches what the requested step count predicted. If they disagree, the
+        window is refused outright rather than silently dividing total time by a guessed
+        pass count, because a wrong divisor would be wrong by that exact same ratio in
+        every single downstream number, with nothing left to ever catch it.</p>
+
+      <h3>backends/*.py adapter files and the engine= field</h3>
+      <p>These correspond one-to-one with Layer 1's backend adapters, each declaring an
+        <code>engine=</code> field describing which serving engine it targets (or
+        native / flashinfer for engine-agnostic, kernel-only measurements). The
+        cross-engine issue surfaced this session: Layer 1's resolve() doesn't filter
+        candidates by this field when building a stack-specific lookup table, so a
+        vLLM-flavored adapter can legitimately win a cell inside SGLang's own lookup table
+        — carrying its incompatible selector spelling along with it unless something
+        downstream catches it.</p>
+
+      <h3>Results produced</h3>
+      <p>Per-run decomposition JSON with full provenance (engine version, effective
+        runtime kwargs, checkpoint revision, CUDA graph mode, forward-pass count plus the
+        evidence for it) — feeding a growing catalog of validated runtime configurations,
+        plus cross-engine comparison reports. These same measured phase timings are what
+        Layer 5's optimizer catalog later ingests as its "layer3.catalog" input.</p>
+    </section>
+
+    <!-- ========================= LAYER 4 ========================= -->
+    <section class="layer tab-panel" id="layer4" role="tabpanel" aria-labelledby="tab-layer4" tabindex="0" hidden>
+      <div class="eyebrow">Integration &amp; prediction layer</div>
+      <h2>Layer 4 — Serving Performance Model</h2>
+      <p class="question"><b>What this layer adds that Layers 1–3 don't have:</b> real
+        serving is never one fixed batch. Requests arrive at random times; the engine's own
+        scheduler decides what goes into each forward pass; passes mix prefill chunks
+        together with decode steps; the KV cache fills up and requests wait or get
+        preempted. TTFT, ITL, and throughput at a given load are properties of
+        <em>that whole process</em>, not of any single forward pass — so Layer 4 is
+        primarily an <strong>integration and prediction layer</strong>, combining Layer 2's
+        model GPU execution behavior, Layer 3's serving-engine/runtime behavior, and the
+        canonical workload profile defined back in Step 1, rather than running yet another
+        independent round of benchmarking.</p>
+
+      <figure class="diagram">
+<div class="dgm-scroll"><svg class="dgm" viewBox="0 0 840 390" role="img" aria-label="Layer 4: Layer 2, Layer 3 and the Step 1 workload feed a scheduler simulator, tuned by scheduling knobs, which yields a Pareto set of configurations and six customer-facing metrics">
+<rect x="10" y="55" width="190" height="60" rx="10" class="d-box"/>
+<text x="105" y="80" text-anchor="middle" class="d-t">Layer 2 plan</text>
+<text x="105" y="100" text-anchor="middle" class="d-s">GPU execution</text>
+<rect x="10" y="145" width="190" height="60" rx="10" class="d-box"/>
+<text x="105" y="170" text-anchor="middle" class="d-t">Layer 3 overhead</text>
+<text x="105" y="190" text-anchor="middle" class="d-s">engine &amp; runtime</text>
+<rect x="10" y="235" width="190" height="60" rx="10" class="d-box"/>
+<text x="105" y="260" text-anchor="middle" class="d-t">Step 1 workload</text>
+<text x="105" y="280" text-anchor="middle" class="d-s">canonical profile</text>
+<path d="M202,85 C232,85 232,150 257,150" class="d-line" marker-end="url(#dar)"/>
+<path d="M202,175 L257,175" class="d-line" marker-end="url(#dar)"/>
+<path d="M202,265 C232,265 232,200 257,200" class="d-line" marker-end="url(#dar)"/>
+
+<rect x="260" y="115" width="230" height="120" rx="12" class="d-box accent"/>
+<text x="375" y="145" text-anchor="middle" class="d-t accent">Scheduler simulator</text>
+<text x="375" y="168" text-anchor="middle" class="d-s">discrete-event, one step</text>
+<text x="375" y="184" text-anchor="middle" class="d-s">per forward pass</text>
+<text x="375" y="208" text-anchor="middle" class="d-k">reuses M1 pass-cost model</text>
+
+<rect x="225" y="270" width="300" height="70" rx="10" class="d-box dash"/>
+<text x="375" y="294" text-anchor="middle" class="d-t">Scheduling knobs</text>
+<text x="375" y="314" text-anchor="middle" class="d-s d-mono" style="font-size:11.5px">max_num_seqs · max_num_batched_tokens</text>
+<text x="375" y="330" text-anchor="middle" class="d-s">KV capacity · prefix caching · policy</text>
+<path d="M375,268 L375,238" class="d-line accent dash" marker-end="url(#dar-a)"/>
+
+<path d="M492,175 L537,175" class="d-line" marker-end="url(#dar)"/>
+<rect x="540" y="140" width="112" height="70" rx="10" class="d-box"/>
+<text x="596" y="171" text-anchor="middle" class="d-t">Pareto set</text>
+<text x="596" y="191" text-anchor="middle" class="d-s">good configs</text>
+
+<path d="M654,175 L676,175 M676,46 L676,296" class="d-line accent"/>
+<path d="M676,46 L689,46" class="d-line accent" marker-end="url(#dar-a)"/>
+<path d="M676,96 L689,96" class="d-line accent" marker-end="url(#dar-a)"/>
+<path d="M676,146 L689,146" class="d-line accent" marker-end="url(#dar-a)"/>
+<path d="M676,196 L689,196" class="d-line accent" marker-end="url(#dar-a)"/>
+<path d="M676,246 L689,246" class="d-line accent" marker-end="url(#dar-a)"/>
+<path d="M676,296 L689,296" class="d-line accent" marker-end="url(#dar-a)"/>
+<rect x="692" y="26" width="140" height="40" rx="9" class="d-box accent"/>
+<text x="762" y="51" text-anchor="middle" class="d-m">p99 TTFT</text>
+<rect x="692" y="76" width="140" height="40" rx="9" class="d-box accent"/>
+<text x="762" y="101" text-anchor="middle" class="d-m">p99 TPOT</text>
+<rect x="692" y="126" width="140" height="40" rx="9" class="d-box accent"/>
+<text x="762" y="151" text-anchor="middle" class="d-m">throughput</text>
+<rect x="692" y="176" width="140" height="40" rx="9" class="d-box accent"/>
+<text x="762" y="201" text-anchor="middle" class="d-m">sustainable rate</text>
+<rect x="692" y="226" width="140" height="40" rx="9" class="d-box accent"/>
+<text x="762" y="251" text-anchor="middle" class="d-m">memory feasibility</text>
+<rect x="692" y="276" width="140" height="40" rx="9" class="d-box accent"/>
+<text x="762" y="301" text-anchor="middle" class="d-m">context length</text>
+<text x="420" y="376" text-anchor="middle" class="d-k">Predictions here define which requirements Step 1 is allowed to offer.</text>
+</svg></div>
+<figcaption>Layer 4 integrates Layers 2 and 3 through a scheduler simulator into customer-facing metrics.</figcaption>
+</figure>
+
+      <h3>What it predicts</h3>
+      <p>The customer-facing metrics defined back in Step 1: p99 TTFT, p99 TPOT,
+        throughput, sustainable request rate, memory feasibility, and supported context
+        length. These predictions, in turn, are what define which discrete performance
+        requirements Runara is even allowed to expose to the user for a given model and
+        workload — the feasible-choices list in Step 1 is generated from what Layer 4 can
+        actually predict, not the other way around.</p>
+
+      <h3>Two kinds of configuration, modeled in two different places</h3>
+      <ul>
+        <li><strong>Kernel-shaping knobs</strong> (e.g. max_model_len under CUDA graphs, KV
+          page size, attention/MoE backend flags) change what a single pass <em>costs</em>
+          — already fully handled by Layers 1 and 2.</li>
+        <li><strong>Scheduling-shaping knobs</strong> (max_num_seqs,
+          max_num_batched_tokens, memory fraction / KV capacity, prefix caching, scheduling
+          policy) change <em>which passes run at all</em> — this is Layer 4's job, because
+          these knobs trade metrics against each other with no single universal "best"
+          value (a bigger prefill budget raises throughput and shortens TTFT, but stretches
+          ITL for requests already mid-generation). Layer 4 returns a Pareto set of good
+          configurations, not one single answer.</li>
+      </ul>
+
+      <h3>Milestones</h3>
+      <div class="chips">
+        <span class="chip chip-green">M0 — bench harness (built)</span>
+        <span class="chip chip-green">M1 — pass-cost model (built)</span>
+        <span class="chip chip-green">M2 — vLLM scheduler simulator (built, validated on real L40S data)</span>
+        <span class="chip chip-red">M3 — SGLang simulator (not yet built)</span>
+        <span class="chip chip-red">M4 — configuration search (not yet built in layer4)</span>
+        <span class="chip chip-red">M5 — wiring into the app (not yet built in layer4)</span>
+      </div>
+      <p><strong>M0 — the bench harness.</strong> Starts a real engine server from a pinned
+        configuration (<strong>default</strong> = the engine's out-of-the-box settings;
+        <strong>selected</strong> = Layer 2's chosen kernel flags, with context capped to
+        the workload), drives it with a client against a canonical workload at a range of
+        request rates and concurrencies, and persists every single request's full per-token
+        timestamp trace alongside summary percentile metrics.</p>
+      <p><strong>M1 — pass-cost model, validated against real mixed passes.</strong>
+        <code>cost.py</code>'s <code>price_pass()</code> takes one real pass's actual
+        composition — which decode sequences at which KV lengths, which prefill chunks at
+        which lengths and cache prefixes — and prices it by resolving each piece against
+        Layer 2/Layer 1: GEMM and MoE scale with total token count, attention is priced
+        per-part for its decode and prefill portions separately, and uncovered overhead
+        comes from Layer 3's own measured per-engine function of token count — never a
+        flat, made-up constant.</p>
+      <p>Since nothing upstream ever recorded which real requests shared a forward pass,
+        <code>passes.py</code>'s <code>reconstruct_passes()</code> infers pass boundaries
+        and composition purely from client-side timestamps: concurrent decode steps land
+        within about 1e-7 seconds of each other on a real trace, so clustering raw
+        token-arrival timestamps within a small epsilon (2ms) recovers the engine's actual
+        iteration boundaries without the engine ever having to expose them directly. It
+        explicitly cannot see prefill passes hidden behind chunked prefill (only the very
+        last chunk's completion produces any visible event at all), and it flags any such
+        inferred chunk length as a lower bound rather than silently guessing the true
+        split.</p>
+      <p><strong>M2 — vLLM scheduler simulator, built and validated against real L40S
+        data.</strong> A discrete-event simulation of vLLM's own v1 scheduler: every
+        currently-running decode sequence continues unconditionally each pass; prefill
+        chunks fill whatever token budget remains, subject to the concurrency cap and the
+        real KV capacity (parsed directly from the server's own startup log, never
+        guessed); preemption is detected and flagged, not simulated (confirmed zero
+        preemption events occurred across 36 real M0 server logs, so this was a safe
+        simplification). It reuses M1's pass-cost model completely unchanged and produces
+        per-request timelines in exactly the shape the metrics module consumes, so the
+        simulator's output and a real recorded run are compared using identical metric
+        definitions.</p>
+      <p><strong>M3 — SGLang scheduler simulator, not yet built.</strong> Same milestone
+        shape as M2, deliberately kept as a separate effort because SGLang's scheduling
+        model is fundamentally different: separate prefill/decode batches by default,
+        radix-cache reuse, and an overlap scheduler with its own documented timing
+        artifacts.</p>
+      <p><strong>M4 — configuration search, not yet built in layer4 itself.</strong>
+        Originally planned as a grid search over the scheduling knobs inside layer4,
+        evaluated cheaply via the simulator, with only the resulting top-k candidates
+        validated against real runs. In practice, some of this role is already being
+        filled by Layer 5's optimizer catalog (see below) via a different mechanism — a
+        versioned data pipeline rather than a simulator-driven grid search — which is worth
+        treating as a live overlap to resolve rather than two independent efforts.</p>
+      <p><strong>M5 — wiring results into the app, not yet built in layer4 itself.</strong>
+        Same note as M4: the app-runara-ai platform already has a working, shipped
+        mechanism (the optimizer catalog pipeline) for surfacing validated configurations
+        to the product, built independently of this planned layer4 milestone.</p>
+
+      <h3>Supporting modules</h3>
+      <ul>
+        <li><strong>metrics.py</strong> — computes TTFT, TPOT, ITL, and throughput from
+          per-request token timelines using the exact same definitions a real engine
+          benchmark client would, so simulated and real runs are always comparable
+          apples-to-apples.</li>
+        <li><strong>validate_m1.py</strong> — checks M1's pass-cost predictions against
+          real M0 traces, bucketed into priced vs. unpriced coverage.</li>
+        <li><strong>validate_m2.py</strong> — checks the whole simulator's aggregate output
+          metrics against a run's own recorded metrics, against explicit numeric
+          validation targets (e.g. p50 TTFT/ITL within ±15%, p99 within ±25%, sustainable
+          throughput within ±15%).</li>
+        <li><strong>breakdown.py</strong> — a pure reporting tool that decomposes Runara's
+          measured gain over an engine's own defaults into engine / configuration / kernel
+          contributions, built on top of M0's existing data; unrelated to the M1–M3
+          simulation work itself.</li>
+        <li><strong>BACKLOG.md</strong> — tracks deliberately deferred items across all
+          four layers (for example: the standard "batch" workload is sized for a
+          96GB-class card and doesn't fit certain fp8 models on a 48GB card — which is
+          exactly why some serving cells correctly refuse to run rather than silently
+          degrading).</li>
+      </ul>
+
+      <h3>Validation targets</h3>
+      <div class="chips">
+        <span class="chip chip-blue">Throughput ±10%</span>
+        <span class="chip chip-blue">p50 TTFT/ITL ±15%</span>
+        <span class="chip chip-blue">p99 TTFT/ITL ±25%</span>
+        <span class="chip chip-blue">Sustainable rate ±15%</span>
+        <span class="chip chip-blue">Config ranking within 5% of best</span>
+      </div>
+    </section>
+
+    <!-- ========================= LAYER 5 ========================= -->
+    <section class="layer tab-panel" id="layer5" role="tabpanel" aria-labelledby="tab-layer5" tabindex="0" hidden>
+      <div class="eyebrow">Filter → filter → rank</div>
+      <h2>Layer 5 — Cost &amp; Configuration Optimizer</h2>
+      <p class="question"><b>The question it answers:</b> of every configuration the
+        empirical knowledge base supports, which single one is the cheapest per token
+        while still meeting the customer's requirements?</p>
+
+      <figure class="diagram">
+<div class="dgm-scroll"><svg class="dgm" viewBox="0 0 840 365" role="img" aria-label="Layer 5: all configurations are filtered for feasibility, then for requirements, then ranked by cost per token to pick the cheapest feasible plan">
+<rect x="30" y="16" width="600" height="50" rx="10" class="d-box"/>
+<text x="330" y="46" text-anchor="middle" class="d-t">All valid configurations</text>
+<path d="M330,66 L330,83" class="d-line" marker-end="url(#dar)"/>
+<rect x="80" y="86" width="500" height="50" rx="10" class="d-box"/>
+<text x="330" y="116" text-anchor="middle" class="d-t">Remove incompatible / memory-infeasible</text>
+<path d="M330,136 L330,153" class="d-line" marker-end="url(#dar)"/>
+<rect x="130" y="156" width="400" height="50" rx="10" class="d-box"/>
+<text x="330" y="186" text-anchor="middle" class="d-t">Remove what misses requirements</text>
+<path d="M330,206 L330,223" class="d-line" marker-end="url(#dar)"/>
+<rect x="180" y="226" width="300" height="50" rx="10" class="d-box accent"/>
+<text x="330" y="256" text-anchor="middle" class="d-t accent">Rank by cost per token</text>
+<path d="M330,276 L330,293" class="d-line green" marker-end="url(#dar-g)"/>
+<rect x="200" y="296" width="260" height="56" rx="12" class="d-box green"/>
+<text x="330" y="330" text-anchor="middle" class="d-t green">Cheapest feasible plan</text>
+
+<path d="M582,111 L647,111" class="d-line red dash" marker-end="url(#dar-r)"/>
+<text x="656" y="106" class="d-t red d-sm">dropped</text>
+<text x="656" y="124" class="d-s">wrong precision, too big</text>
+<path d="M532,181 L647,181" class="d-line red dash" marker-end="url(#dar-r)"/>
+<text x="656" y="176" class="d-t red d-sm">dropped</text>
+<text x="656" y="194" class="d-s">misses Layer 4 p99 targets</text>
+<path d="M482,251 L647,251" class="d-line dash"/>
+<text x="656" y="246" class="d-s">provider price ÷</text>
+<text x="656" y="262" class="d-s">conservative throughput</text>
+<path d="M462,324 L647,324" class="d-line green dash"/>
+<text x="656" y="318" class="d-s">GPU · precision · engine ·</text>
+<text x="656" y="334" class="d-s">kernels · KV · runtime</text>
+</svg></div>
+<figcaption>Layer 5’s filter-then-rank funnel from all configurations down to the cheapest feasible plan.</figcaption>
+</figure>
+
+      <h3>The search, step by step</h3>
+      <ol class="verbs">
+        <li><div><strong>Remove incompatible or memory-infeasible combinations</strong>
+          first — before even consulting performance predictions, anything that simply
+          can't run (wrong precision for the hardware, model too large for the memory
+          budget) is dropped.</div></li>
+        <li><div><strong>Remove configurations that can't satisfy the selected performance
+          requirements</strong>, using Layer 4's serving-performance predictions (p99
+          TTFT, p99 TPOT, throughput, sustainable rate) directly.</div></li>
+        <li><div><strong>Estimate delivered performance and cost per token</strong> for the
+          remaining candidates, and select the lowest-cost feasible plan.</div></li>
+      </ol>
+      <p><strong>Optimizer output:</strong> GPU type/count + precision + serving engine +
+        Runara kernels/backends + parallelism + KV strategy + runtime configuration +
+        expected performance/cost.</p>
+
+      <h3>Where this actually lives today: the optimizer catalog pipeline</h3>
+      <p>This is implemented as a real, versioned <strong>catalog pipeline</strong> inside
+        the app-runara-ai platform — not a stub. It pulls validated artifacts from every
+        layer below it through explicit, versioned export contracts: Layer 1's kernel
+        lookups, Layer 1.5's routing profiles, Layer 2's plan/memory/coverage export,
+        Layer 3's measured phase-timing catalog, and Layer 4's qualified request-level
+        serving results with their p99 envelopes.</p>
+      <p>From these, it builds immutable, hashed, checksummed <strong>releases</strong> (a
+        manifest plus separate configs/plans/measurements/serving data files), which are
+        staged and then atomically activated — so a bad release can be rolled back by
+        simply reactivating the prior one rather than needing a rebuild.</p>
+
+      <h3>What the ranking logic actually does</h3>
+      <ul>
+        <li><strong>Exact matching, not approximate matching</strong> — configurations are
+          matched by exact configuration-hash and execution-identity, never
+          fuzzy-matched.</li>
+        <li><strong>"Selected" only wins when it's clearly faster</strong> — the "selected"
+          (Runara-optimized) configuration is only reported as better than the engine's
+          "default" configuration when the improvement clearly exceeds measurement noise,
+          not whenever the two merely look different.</li>
+        <li><strong>Cost per million tokens</strong> is computed from current provider
+          pricing divided by a conservative (not optimistic) throughput estimate.</li>
+        <li><strong>Slider-based feasibility search</strong> — a customer's TTFT/ITL
+          requirements are treated as a joint constraint, and the search honestly returns
+          "no cheapest candidate" when nothing in the catalog actually satisfies both at
+          once, rather than silently returning the closest miss.</li>
+      </ul>
+      <p>This is a live instance of exactly the filtering logic described above: filter
+        out what's infeasible, filter again by what Layer 4 actually predicts, then pick
+        the cheapest survivor.</p>
+
+      <h3>Current coverage — real but still narrow</h3>
+      <p>As of the most recent documented release, only a small number of real serving
+        records have full Layer 4 qualification end-to-end (a handful of releases for one
+        model on one high-end card). Most other model/hardware/precision combinations
+        currently fall back to reference Layer 2/3 phase estimates rather than full
+        request-level guarantees. The mechanism is real and already shipped; the breadth
+        of fully-validated coverage behind it is still being built out.</p>
+    </section>
+
+    <!-- ========================= LAYER 6 ========================= -->
+    <section class="layer tab-panel" id="layer6" role="tabpanel" aria-labelledby="tab-layer6" tabindex="0" hidden>
+      <div class="eyebrow">Selected plan → running endpoint</div>
+      <h2>Layer 6 — Deployment System</h2>
+      <p class="question"><b>The question it answers:</b> given the exact configuration
+        Layer 5 selected, how do we actually stand up a running, reachable endpoint that
+        honors every assumption the prediction was built on?</p>
+
+      <figure class="diagram">
+<div class="dgm-scroll"><svg class="dgm" viewBox="0 0 840 230" role="img" aria-label="Layer 6: selected plan, provision, apply config, launch, health check, running endpoint, all on the exact stack the prediction measured">
+<text x="66" y="16" text-anchor="middle" class="d-num">01</text>
+<text x="205" y="16" text-anchor="middle" class="d-num">02</text>
+<text x="344" y="16" text-anchor="middle" class="d-num">03</text>
+<text x="483" y="16" text-anchor="middle" class="d-num">04</text>
+<text x="622" y="16" text-anchor="middle" class="d-num">05</text>
+<text x="761" y="16" text-anchor="middle" class="d-num">06</text>
+<rect x="4" y="24" width="124" height="92" rx="10" class="d-box"/>
+<text x="66" y="54" text-anchor="middle" class="d-t">Selected plan</text>
+<text x="66" y="78" text-anchor="middle" class="d-s">from Layer 5</text>
+<rect x="143" y="24" width="124" height="92" rx="10" class="d-box"/>
+<text x="205" y="54" text-anchor="middle" class="d-t">Provision</text>
+<text x="205" y="78" text-anchor="middle" class="d-s">6 clouds + BYOC</text>
+<text x="205" y="94" text-anchor="middle" class="d-s">warm pools</text>
+<rect x="282" y="24" width="124" height="92" rx="10" class="d-box"/>
+<text x="344" y="54" text-anchor="middle" class="d-t">Apply config</text>
+<text x="344" y="78" text-anchor="middle" class="d-s">exact model +</text>
+<text x="344" y="94" text-anchor="middle" class="d-s">runtime config</text>
+<rect x="421" y="24" width="124" height="92" rx="10" class="d-box"/>
+<text x="483" y="54" text-anchor="middle" class="d-t">Launch</text>
+<text x="483" y="78" text-anchor="middle" class="d-s">Runara vLLM /</text>
+<text x="483" y="94" text-anchor="middle" class="d-s">TRT-LLM image</text>
+<rect x="560" y="24" width="124" height="92" rx="10" class="d-box"/>
+<text x="622" y="54" text-anchor="middle" class="d-t">Health check</text>
+<text x="622" y="78" text-anchor="middle" class="d-s">GPU + endpoint,</text>
+<text x="622" y="94" text-anchor="middle" class="d-s">checked separately</text>
+<rect x="699" y="24" width="124" height="92" rx="10" class="d-box green"/>
+<text x="761" y="54" text-anchor="middle" class="d-t green">Endpoint</text>
+<text x="761" y="78" text-anchor="middle" class="d-s">reachable,</text>
+<text x="761" y="94" text-anchor="middle" class="d-s">monitored</text>
+<path d="M129,70 L140,70" class="d-line" marker-end="url(#dar)"/>
+<path d="M268,70 L279,70" class="d-line" marker-end="url(#dar)"/>
+<path d="M407,70 L418,70" class="d-line" marker-end="url(#dar)"/>
+<path d="M546,70 L557,70" class="d-line" marker-end="url(#dar)"/>
+<path d="M685,70 L696,70" class="d-line green" marker-end="url(#dar-g)"/>
+<path d="M205,116 L205,140 M344,116 L344,140 M483,116 L483,140 M622,116 L622,140" class="d-line accent dash"/>
+<rect x="143" y="140" width="541" height="40" rx="9" class="d-box accent dash"/>
+<text x="413.5" y="165" text-anchor="middle" class="d-s d-ink">same image · engine version · kernel flags the prediction measured</text>
+<text x="420" y="214" text-anchor="middle" class="d-k">Anything else would silently invalidate every number from Layers 1–5.</text>
+</svg></div>
+<figcaption>Layer 6 turns the selected plan into a running, health-checked endpoint.</figcaption>
+</figure>
+
+      <h3>Why this has to be its own layer</h3>
+      <p>The selected plan is only meaningful if it's executed using the same optimized
+        software components the prediction was based on — a different container image, a
+        different engine version, or a different set of kernel flags than what was
+        actually measured would silently invalidate every number Layers 1 through 5
+        produced. The deployment system exists to turn an abstract optimizer decision into
+        a reproducible, faithful execution environment, not just "any" environment that
+        happens to run the model.</p>
+
+      <h3>What it does, end to end</h3>
+      <p>Provisions or selects the required compute, applies the selected model and
+        runtime configuration exactly as chosen, launches the service, verifies health,
+        and returns a usable endpoint. For the MVP this is intentionally constrained to a
+        small set of known Runara vLLM/TensorRT-LLM images and supported hardware
+        configurations, rather than trying to support every possible combination from day
+        one.</p>
+
+      <h3>Where this actually lives today</h3>
+      <p>This is implemented as part of the same production app-runara-ai platform as
+        Layer 5, and it is substantially more built-out than a minimal MVP would require:</p>
+      <ul>
+        <li><strong>Multi-cloud provisioning</strong> — dedicated integrations and
+          launch-configuration tables for AWS EC2, GCP Compute, Azure VMs, Lambda Cloud,
+          RunPod, and Koyeb, plus support for bring-your-own-cloud (BYOC)
+          configurations.</li>
+        <li><strong>Warm pools</strong> — pre-provisioned instances kept ready so a
+          deployment doesn't have to pay full cold-start provisioning latency every
+          time.</li>
+        <li><strong>Lifecycle tracking</strong> — dedicated tables for deployments,
+          warm-pool instances, and model/volume snapshots, plus explicit tracking of
+          provisioning stage, progress, and capacity failures (so a failed provisioning
+          attempt on one provider/region is a known, recorded event, not a silent retry
+          loop).</li>
+        <li><strong>Health verification</strong> — dedicated callback endpoints for
+          instance status and live GPU metrics, so "launched" and "actually healthy and
+          serving" are checked as two separate things.</li>
+        <li><strong>Monitoring</strong> — a full Prometheus → VictoriaMetrics → Grafana
+          stack scraping every live GPU instance, so deployed endpoints stay observable
+          after launch, not just at the moment they come up.</li>
+        <li><strong>Billing</strong> — a Stripe-based prepaid wallet system layered
+          directly on top of the deployment lifecycle, tying cost tracking to the same
+          deployment records the provisioning system manages.</li>
+      </ul>
+      <p>This goes beyond the MVP-level description in the master plan (which calls for a
+        narrow, constrained version) — the real system already supports multiple clouds,
+        BYOC, and billing, which is further ahead on this layer than the original MVP
+        scope asked for.</p>
+    </section>
+
+    <!-- ========================= INFRA ========================= -->
+    <section class="layer tab-panel" id="infra" role="tabpanel" aria-labelledby="tab-infra" tabindex="0" hidden>
+      <div class="eyebrow">Runs alongside Layers 1–5, not after them</div>
+      <h2>Parallel Infrastructure Workstream</h2>
+      <p>This runs alongside Layers 1 through 5, not after them, because the optimizer and
+        prediction stack cannot become an actual product unless its output can be
+        translated into a real, running deployment. It covers:</p>
+      <ul>
+        <li>A normalized hardware inventory and pricing representation, kept current
+          across providers.</li>
+        <li>The connection between the optimizer's output and actual available
+          compute.</li>
+        <li>Reproducible Runara execution images for every supported vLLM/TensorRT-LLM
+          configuration — so the exact software stack a prediction was based on is the
+          exact stack that gets deployed.</li>
+        <li>Automation for provisioning, engine startup, health checks, endpoint creation,
+          and teardown.</li>
+        <li>A deliberately narrow MVP scope — supporting only the infrastructure paths
+          required for the initial validated configurations, rather than every
+          theoretically possible combination.</li>
+      </ul>
+      <div class="callout">
+        <strong>Related but separate work worth knowing about:</strong> a directory of
+        manual benchmarking writeups (dated reports across specific
+        model/hardware/provider combinations, produced by hand) represents
+        prior-generation manual work that the automated optimizer catalog is intended to
+        eventually replace, rather than being itself part of the Layer 5/6 pipeline.
+        Separately, a self-contained GPU kernel auto-tuning research effort (exploring
+        whether a tuned kernel configuration transfers across different models that share
+        the same card, regime, and matrix-size band) is adjacent to Layer 1's "which
+        backend wins" question but goes one level deeper — tuning <em>within</em> a chosen
+        backend rather than choosing between backends — and is not currently wired into
+        the Layer 1–6 pipeline.
+      </div>
+    </section>
+
+    <!-- ========================= CONNECT TABLE ========================= -->
+    <section class="layer plain tab-panel" id="connect" role="tabpanel" aria-labelledby="tab-connect" tabindex="0" hidden>
+      <h2>How the Layers Connect</h2>
+      <div class="scroll-table">
+        <table>
+          <thead><tr><th>Layer</th><th>Question</th><th>Output</th></tr></thead>
+          <tbody>
+            <tr><td>Step 1</td><td>What does the customer need?</td><td>Model + workload + validated requirements</td></tr>
+            <tr><td>Layer 1</td><td>How do reusable compute units perform on each GPU?</td><td>Empirical backend/configuration lookup tables</td></tr>
+            <tr><td>Layer 1.5</td><td>How does real text actually route through this model's experts?</td><td>Per-(model, corpus) MoE routing profile</td></tr>
+            <tr><td>Layer 2</td><td>What is the best GPU execution plan for this model and workload?</td><td>Per-unit backend plan + predicted/measured model GPU time</td></tr>
+            <tr><td>Layer 3</td><td>What additional behavior does the serving engine/runtime introduce?</td><td>Engine/runtime overhead characterization</td></tr>
+            <tr><td>Layer 4</td><td>What customer-facing performance will the complete configuration deliver?</td><td>TTFT / TPOT / throughput / capacity / memory predictions</td></tr>
+            <tr><td>Layer 5</td><td>Which feasible plan is cheapest?</td><td>Optimized deployment plan</td></tr>
+            <tr><td>Layer 6</td><td>How do we run that exact plan?</td><td>Running Runara endpoint</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================= END-TO-END EXAMPLE ========================= -->
+    <section class="layer tab-panel" id="example" role="tabpanel" aria-labelledby="tab-example" tabindex="0" hidden>
+      <div class="eyebrow">Worked example</div>
+      <h2>End-to-End Example</h2>
+      <p>A customer requests: Model A, Precision Auto, Workload RAG, Context 32K, p99
+        TTFT ≤ 2s, p99 TPOT ≤ 40ms, required throughput 10 req/s. Runara evaluates feasible
+        configurations using Layers 1–4, and finds two that satisfy every requirement:</p>
+
+      <div class="scroll-table">
+        <table>
+          <thead><tr><th></th><th>Configuration A</th><th>Configuration B</th></tr></thead>
+          <tbody>
+            <tr><td>Hardware</td><td>2× High-End GPU</td><td>4× Lower-Cost GPU</td></tr>
+            <tr><td>Precision</td><td>FP8</td><td>FP8</td></tr>
+            <tr><td>Serving Engine</td><td>TRT-LLM</td><td>vLLM</td></tr>
+            <tr><td>p99 TTFT</td><td>1.4 s</td><td>1.8 s</td></tr>
+            <tr><td>p99 TPOT</td><td>27 ms</td><td>35 ms</td></tr>
+            <tr><td>Throughput</td><td>14 req/s</td><td>12 req/s</td></tr>
+            <tr><td>Infrastructure Cost</td><td>$12/hour</td><td>$7/hour</td></tr>
+            <tr><td>Cost / 1M tokens</td><td>$0.48</td><td>$0.31</td></tr>
+            <tr><td>Meets Requirements</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Configuration A is faster, but the extra performance isn't required by the
+        customer's workload. Both configurations satisfy the required level of service, so
+        Runara selects Configuration B — the lowest cost per token among the configurations
+        that actually meet every requirement.</p>
+      <div class="callout">
+        <strong>The objective is never to find the fastest deployment; it is to find the
+        cheapest deployment that is fast enough.</strong>
+      </div>
+    </section>
+
+    <footer class="doc-footer">
+      Grounded in the layer1 / layer2 / layer3 / layer4 repos, the layer1.5 and
+      app-runara-ai platform repos, and the team's master execution plan.
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  try{
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    var ids = tabs.map(function(t){ return t.dataset.tab; });
+
+    function activate(id, updateHash){
+      if (ids.indexOf(id) === -1) id = ids[0];
+      tabs.forEach(function(t){
+        var on = t.dataset.tab === id;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        var panel = document.getElementById(t.dataset.tab);
+        if (panel) panel.hidden = !on;
+      });
+      var activeTab = document.getElementById('tab-' + id);
+      if (activeTab && activeTab.scrollIntoView){
+        activeTab.scrollIntoView({block:'nearest', inline:'center'});
+      }
+      if (updateHash && location.hash.slice(1) !== id){
+        history.replaceState(null, '', '#' + id);
+      }
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+    }
+
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){ activate(t.dataset.tab, true); });
+    });
+    window.addEventListener('hashchange', function(){
+      activate(location.hash.slice(1), false);
+    });
+
+    var initial = location.hash.slice(1);
+    if (initial && ids.indexOf(initial) !== -1) activate(initial, false);
+  }catch(e){}
+})();
+</script>
+
+<script>
+(function(){
+  try{
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    var stages = [['step1','S1'],['layer1','L1'],['layer15','1.5'],['layer2','L2'],
+                  ['layer3','L3'],['layer4','L4'],['layer5','L5'],['layer6','L6']];
+    var stageIds = stages.map(function(s){ return s[0]; });
+
+    function el(tag, cls, html){
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (html != null) e.innerHTML = html;
+      return e;
+    }
+    function subtitle(id){
+      var h = document.querySelector('#' + id + ' h2');
+      if (!h) return '';
+      var t = h.textContent.trim();
+      var i = t.indexOf('—');
+      return i === -1 ? t : t.slice(i + 1).trim();
+    }
+
+    tabs.forEach(function(t, idx){
+      var id = t.dataset.tab, panel = document.getElementById(id);
+      if (!panel) return;
+
+      if (stageIds.indexOf(id) !== -1){
+        var pos = el('nav', 'pos');
+        pos.setAttribute('aria-label', 'Position in pipeline');
+        stages.forEach(function(s, i){
+          if (i) pos.appendChild(el('i'));
+          var a = el('a', (s[0] === id ? 'cur' : '') + (s[0] === 'layer15' ? ' moe' : ''), s[1]);
+          a.href = '#' + s[0];
+          if (s[0] === id) a.setAttribute('aria-current', 'step');
+          pos.appendChild(a);
+        });
+        panel.insertBefore(pos, panel.firstChild);
+      }
+
+      var pager = el('nav', 'pager');
+      pager.setAttribute('aria-label', 'Previous and next section');
+      var prev = tabs[idx - 1], next = tabs[idx + 1];
+      if (prev){
+        var p = el('a', 'prev', '<span class="dir">← Previous</span><span class="ttl"></span>');
+        p.href = '#' + prev.dataset.tab;
+        p.querySelector('.ttl').textContent = prev.textContent + ' · ' + subtitle(prev.dataset.tab);
+        pager.appendChild(p);
+      } else pager.appendChild(el('span', 'spacer'));
+      if (next){
+        var n = el('a', 'next', '<span class="dir">Next →</span><span class="ttl"></span>');
+        n.href = '#' + next.dataset.tab;
+        n.querySelector('.ttl').textContent = next.textContent + ' · ' + subtitle(next.dataset.tab);
+        pager.appendChild(n);
+      }
+      panel.appendChild(pager);
+    });
+  }catch(e){}
+})();
+</script>
+</body></html>
