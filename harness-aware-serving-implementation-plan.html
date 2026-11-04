@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Serving Implementation Plan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#f7f5f1; --surface:#ffffff; --border:#e4ded3;
+    --fg:#211d16; --fg-dim:#6b6457;
+    --accent:#b5651d; --accent-fg:#fff8ef; --code-bg:#f0ece4;
+    --display:'Source Serif 4', Georgia, serif;
+    --body:'IBM Plex Sans', system-ui, sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17140f; --surface:#1f1b14; --border:#332c21;
+      --fg:#efe9dd; --fg-dim:#a89f8e;
+      --accent:#e3974a; --accent-fg:#1a1208; --code-bg:#272217;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17140f; --surface:#1f1b14; --border:#332c21;
+    --fg:#efe9dd; --fg-dim:#a89f8e;
+    --accent:#e3974a; --accent-fg:#1a1208; --code-bg:#272217;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--fg); font-family:var(--body); line-height:1.6; margin:0; padding-inline:16px}
+  h1,h2,h3{font-family:var(--display); text-wrap:balance; color:var(--fg); line-height:1.25}
+  .wrap{max-width:900px; margin:0 auto; padding-block:48px 96px}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent)}
+  h1{font-size:clamp(28px,4vw,40px); margin:10px 0 18px; font-weight:700}
+  h2{font-size:22px; margin:44px 0 10px; padding-top:20px; border-top:1px solid var(--border)}
+  h3{font-size:17px; margin:28px 0 8px}
+  p{margin:0 0 14px; max-width:72ch}
+  ul,ol{margin:0 0 14px; padding-left:22px}
+  li{margin-bottom:8px; max-width:72ch}
+  li::marker{color:var(--accent)}
+  a{color:var(--accent)}
+  code{font-family:var(--mono); font-size:.86em; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  .note{color:var(--fg-dim); font-size:14px}
+
+  .scroll{overflow-x:auto; margin:14px 0 20px; border:1px solid var(--border); border-radius:8px; background:var(--surface)}
+  table{border-collapse:collapse; width:100%; min-width:560px; font-size:14px}
+  th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-dim); font-weight:500; padding:10px 12px; border-bottom:1px solid var(--border); white-space:nowrap}
+  td{padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td:first-child{font-weight:500}
+
+  ul.check{list-style:none; padding-left:0}
+  ul.check li{display:flex; gap:10px; align-items:baseline}
+  ul.check li::before{content:"\2610"; color:var(--fg-dim); flex:none}
+  ul.check.plain li{display:block; padding-left:26px; position:relative}
+  ul.check.plain li::before{position:absolute; left:0}
+
+  figure{margin:20px 0; padding:14px; background:var(--surface); border:1px solid var(--border); border-radius:10px}
+  figure svg{display:block; width:100%; height:auto; max-width:760px; margin:0 auto}
+  figcaption{font-size:13px; color:var(--fg-dim); text-align:center; margin-top:8px; font-style:italic}
+  svg text{font-family:var(--body)}
+
+  .site-home{position:fixed; top:14px; right:16px; z-index:1000; font-family:var(--mono); font-size:12px; color:var(--accent); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+  .site-home:hover{border-color:var(--accent)}
+  .to-top{position:fixed; bottom:18px; right:16px; z-index:1000; font-family:var(--mono); font-size:12px; color:var(--fg-dim); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+  .to-top:hover{color:var(--accent); border-color:var(--accent)}
+  @media (max-width:560px){ .site-home,.to-top{font-size:11px; padding:6px 10px} }
+</style>
+</head>
+<body>
+<a class="site-home" href="index.html">&larr; Home</a>
+<a class="to-top" href="#top">&uarr; Top</a>
+
+<div class="wrap" id="top">
+<div class="eyebrow">Runara &middot; implementation plan</div>
+<h1>Harness-Aware Serving: Implementation Plan</h1>
+
+<h2>1. The outcome</h2>
+<p>A customer connects their existing agent to one Runara model endpoint. Runara chooses a suitable measured hardware configuration, then routes the agent's repeated requests to a healthy model replica that can reuse previous calculations. We measure whether this actually improves response speed and operating cost.</p>
+<p>The first release belongs in <strong>Optimizer &rarr; Deploy &rarr; Deployments</strong>, with examples in <strong>Docs</strong> and actual measurements in <strong>Usage</strong>. No additional top-level tab is needed. Hosted models continue to work through their current path; they are a later adoption target, not the first rollout.</p>
+<p><strong>First milestone:</strong> one opt-in dedicated GCP deployment, one pinned model/runtime, two independent replicas on one VM, and a repeatable comparison between ordinary load balancing and session-aware routing. The deployment must remain usable and correctly metered when cache reuse is unavailable.</p>
+<p><strong>Do not begin with:</strong> a new multi-cloud orchestrator, all models, a custom KV-cache storage system, automatic cross-hardware cache movement, or a promise that bursts never queue.</p>
+
+<h2>2. What dev already provides</h2>
+<p>Source-code findings only &mdash; not confirmation of live cloud inventory or runtime health.</p>
+<div class="scroll"><table>
+<thead><tr><th>Area</th><th>What exists</th><th>Reuse / gap</th></tr></thead>
+<tbody>
+<tr><td>Measured selection</td><td><code>optimizerM0Catalog.ts</code>, <code>m0Plan.ts</code>, measured optimizer pages</td><td>Reuse catalog identities and existing selection. Current M0 workload groups are <code>chat</code>, <code>rag</code>, <code>batch</code>; no agent-session contract yet. Do not silently relabel chat measurements as agent evidence.</td></tr>
+<tr><td>Recipe validation</td><td><code>optimizerDeployment.ts</code>, <code>optimizerDeploymentSchema.ts</code></td><td>Validates model, runtime and launch arguments against the selected catalog. An agent serving policy needs its own versioned identity.</td></tr>
+<tr><td>Replica execution</td><td><code>optimizerDockerCommand()</code> in <code>optimizerDeployment.ts</code></td><td>Starts one engine per GPU, on ports <code>8100 + i</code>. Independent replicas, not tensor-parallel shards.</td></tr>
+<tr><td>Current routing</td><td><code>optimizerModelSetup()</code> in the same file</td><td>Creates an Nginx upstream with <code>least_conn</code> on loopback port <code>8001</code>. Does not establish conversation affinity. Most direct pilot integration point.</td></tr>
+<tr><td>Cloud provisioning</td><td><code>optimizerDeploy.ts</code>, <code>optimizerGcpSearch.ts</code>, AWS equivalents</td><td>Existing offers, capacity attempts, exact hardware checks, failures and cleanup can be reused. First pilot remains GCP-only. Note: AWS deployment schema fields (<code>s3Uri</code>, <code>s3Region</code>, <code>awsAmiId</code>) are already stubbed in <code>optimizerDeploymentSchema.ts</code> &mdash; AWS wiring is future work, not a blank-sheet start.</td></tr>
+<tr><td>Runtime artifacts</td><td><code>optimizerArtifacts.ts</code> and <code>infra/gcp/optimizer/</code></td><td>Declares vLLM <strong>0.29.0 / CUDA 13.0.2</strong> and SGLang <strong>0.5.19 / CUDA 13.0.3</strong>, plus pinned checkpoints. Validate compatibility rather than substituting &ldquo;latest.&rdquo;</td></tr>
+<tr><td>Dedicated authentication</td><td><code>authProxy.ts</code></td><td>Validates deployment API keys and billing admission, then forwards to port <code>8001</code>. Keep authentication ahead of routing and engines private.</td></tr>
+<tr><td>Dedicated token meter</td><td><code>infra/token-meter.py</code>, <code>docs/deployment-token-billing.md</code></td><td>Durable cumulative engine counters, replica sampling and existing wallet settlement. <code>infra/token-meter.py</code> is the source of truth; <code>convex/lib/tokenMeter.ts</code> is an auto-generated copy embedded in <code>authProxy.ts</code> (via <code>scripts/sync-token-meter.py</code>) &mdash; one implementation, two representations. Extend carefully for membership changes; do not create a second debit path in the router.</td></tr>
+<tr><td>Hosted authentication/billing</td><td><code>infra/gcp/hosted/auth-proxy.py</code>, <code>docs/devops/hosted-token-billing.md</code></td><td>Separate per-request usage journal. Keep separate from dedicated counter metering; never charge the same request through both.</td></tr>
+<tr><td>GKE lifecycle</td><td><code>gke.ts</code></td><td>Manages hosted GKE model lifecycle (scale, readiness, billing drain). No prefix-cache configuration is applied here; that would need separate engine recipe changes.</td></tr>
+<tr><td>UI</td><td><code>launch/optimiser/</code>, <code>optimizer-deploy-button.tsx</code>, <code>launch/instances/</code>, <code>launch/api-docs/</code></td><td>Extend current screens. Preserve dedicated versus hosted identity and existing playground layout.</td></tr>
+<tr><td>Analytics and CI</td><td><code>usageRecords</code>, <code>billingUsageRecords</code>, existing Prometheus/VictoriaMetrics docs; PR #81 tests and workflows</td><td>Reuse storage and CI. Cache-token metrics, routing outcomes and request-phase histograms need additional instrumentation.</td></tr>
+</tbody></table></div>
+<p><strong>Important:</strong> the repo contains both the older versioned optimizer release pipeline and the current M0 catalog. Follow the source used by the selected optimizer screen and deployment resolver. Do not introduce agent measurements into the wrong import path or change existing planner semantics incidentally.</p>
+
+<h2>3. Recommended pilot decisions</h2>
+<div class="scroll"><table>
+<thead><tr><th>Decision</th><th>Recommendation</th><th>How it becomes final</th></tr></thead>
+<tbody>
+<tr><td>Deployment type</td><td>Dedicated Runara Cloud on GCP</td><td>Separate pilot deployment, no changes to active customer endpoints.</td></tr>
+<tr><td>Layout</td><td>Two GPUs in one supported VM, one identical model replica per GPU</td><td>Verify shape/capacity and model memory headroom, including long conversation KV.</td></tr>
+<tr><td>Model candidate</td><td><code>Qwen/Qwen3-30B-A3B</code>, BF16, pinned optimizer checkpoint</td><td>Already declared in GCS artifacts; verify bucket readiness, parser/tool support and available exact measurements. If unsuitable, record why and choose another catalog-supported instruction model. No JEV special case.</td></tr>
+<tr><td>Engine</td><td>Start with vLLM 0.29.0; evaluate SGLang 0.5.19 as the alternate</td><td>Compatibility spike must prove prefix caching, tool calls, streaming, metrics and model fit. A version change creates a new recipe and requires new measurements.</td></tr>
+<tr><td>Hardware</td><td>Prefer the existing GCP RTX PRO 6000 path</td><td>Hardware edition differences from measured workstation data require direct pilot measurements. Do not present a transferred estimate as validation.</td></tr>
+<tr><td>Cache scope</td><td>GPU-local prefix cache first</td><td>No external cache service needed for the first experiment.</td></tr>
+<tr><td>Router</td><td>Reuse an upstream router if compatible; otherwise a small local gateway with a narrow adapter</td><td>Compare exact-version API/streaming/session support. Prefer an existing SGLang router for its stack if it satisfies the contract. Do not build prefix matching or KV storage ourselves.</td></tr>
+<tr><td>Billing</td><td>Preserve current dedicated deployment tariff and settlement</td><td>Cache discounts, if desired, require a separate verified pricing/usage contract. Performance savings do not automatically mean a changed customer price.</td></tr>
+<tr><td>Availability</td><td>One routing process is acceptable for a clearly labelled internal pilot</td><td>Production shared service requires a separate high-availability design.</td></tr>
+</tbody></table></div>
+<p>Do not rent the VM until the experiment configuration, maximum runtime, cleanup procedure and cost cap are written down. This plan itself does not create cloud resources.</p>
+
+<h2>4. Data flow and component boundaries</h2>
+<figure>
+<svg viewBox="0 0 760 480" role="img" aria-label="Convex manages config and billing; inference requests stay on serving infrastructure" font-size="13">
+  <defs>
+    <marker id="ha-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--fg-dim)"/></marker>
+  </defs>
+  <text x="24" y="28" font-size="15" font-weight="600" fill="var(--fg)">Convex manages config and billing; inference stays on serving infra</text>
+
+  <rect x="16" y="44" width="340" height="108" rx="10" fill="var(--code-bg)" stroke="var(--border)"/>
+  <text x="186" y="62" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--fg-dim)">CONFIGURATION &amp; BILLING PLANE</text>
+  <rect x="32" y="70" width="148" height="68" rx="8" fill="none" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <text x="106" y="99" text-anchor="middle" font-weight="600" fill="var(--fg)">Optimizer / Deploy UI</text>
+  <text x="106" y="117" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">Vercel frontend</text>
+  <line x1="180" y1="104" x2="216" y2="104" stroke="var(--fg-dim)" stroke-width="1.25" marker-end="url(#ha-arrow)"/>
+  <rect x="216" y="70" width="124" height="68" rx="8" fill="none" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <text x="278" y="95" text-anchor="middle" font-weight="600" fill="var(--fg)">Convex</text>
+  <text x="278" y="113" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">validate · quote</text>
+  <text x="278" y="128" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">billing · config</text>
+
+  <line x1="278" y1="152" x2="278" y2="178" stroke="var(--fg-dim)" stroke-width="1.25" marker-end="url(#ha-arrow)"/>
+  <rect x="164" y="178" width="228" height="56" rx="8" fill="none" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <text x="278" y="202" text-anchor="middle" font-weight="600" fill="var(--fg)">GCP Provisioner</text>
+  <text x="278" y="220" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">exact VM · pinned engine</text>
+
+  <line x1="424" y1="44" x2="424" y2="456" stroke="var(--border)" stroke-dasharray="4 4"/>
+  <text x="430" y="40" font-size="11.5" fill="var(--fg-dim)">serving path</text>
+
+  <rect x="440" y="44" width="120" height="56" rx="8" fill="none" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <text x="500" y="68" text-anchor="middle" font-weight="600" fill="var(--fg)">Customer Agent</text>
+  <text x="500" y="86" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">X-Runara-Session-Id</text>
+  <line x1="500" y1="100" x2="500" y2="128" stroke="var(--fg-dim)" stroke-width="1.25" marker-end="url(#ha-arrow)"/>
+
+  <rect x="428" y="128" width="144" height="56" rx="8" fill="none" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <text x="500" y="152" text-anchor="middle" font-weight="600" fill="var(--fg)">TLS + Auth Proxy</text>
+  <text x="500" y="170" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">API key · billing</text>
+  <line x1="500" y1="184" x2="500" y2="212" stroke="var(--fg-dim)" stroke-width="1.25" marker-end="url(#ha-arrow)"/>
+
+  <rect x="428" y="212" width="144" height="56" rx="8" fill="var(--accent)" fill-opacity="0.12" stroke="var(--accent)" stroke-width="2"/>
+  <text x="500" y="236" text-anchor="middle" font-weight="600" fill="var(--fg)">Local Routing Gateway</text>
+  <text x="500" y="254" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">opt-in; replaces least_conn</text>
+
+  <line x1="466" y1="268" x2="440" y2="308" stroke="var(--fg-dim)" stroke-width="1.25" marker-end="url(#ha-arrow)"/>
+  <line x1="534" y1="268" x2="560" y2="308" stroke="var(--fg-dim)" stroke-width="1.25" marker-end="url(#ha-arrow)"/>
+
+  <rect x="372" y="308" width="136" height="68" rx="8" fill="none" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <text x="440" y="332" text-anchor="middle" font-weight="600" fill="var(--fg)">Replica A :8100</text>
+  <text x="440" y="350" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">GPU-local prefix cache</text>
+  <text x="440" y="366" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">one GPU</text>
+  <rect x="492" y="308" width="136" height="68" rx="8" fill="none" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <text x="560" y="332" text-anchor="middle" font-weight="600" fill="var(--fg)">Replica B :8101</text>
+  <text x="560" y="350" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">GPU-local prefix cache</text>
+  <text x="560" y="366" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">one GPU</text>
+
+  <line x1="440" y1="376" x2="440" y2="404" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <line x1="560" y1="376" x2="560" y2="404" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <line x1="440" y1="404" x2="560" y2="404" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <line x1="500" y1="404" x2="500" y2="430" stroke="var(--fg-dim)" stroke-width="1.25" marker-end="url(#ha-arrow)"/>
+  <rect x="400" y="430" width="200" height="40" rx="8" fill="none" stroke="var(--fg-dim)" stroke-width="1.25"/>
+  <text x="500" y="447" text-anchor="middle" font-weight="600" fill="var(--fg)">Token Meter → Ledger</text>
+  <text x="500" y="463" text-anchor="middle" font-size="11.5" fill="var(--fg-dim)">existing dedicated billing path</text>
+</svg>
+<figcaption>data flow &middot; config plane left, serving path right</figcaption>
+</figure>
+<p>Convex manages desired configuration and durable billing, not per-token routing. Inference requests and streaming responses stay on the serving infrastructure &mdash; no Convex write on each generated token, and no synchronous full-database scan per request.</p>
+<p>Vercel remains the frontend and current app/API integration layer. The production agent endpoint must not depend on a long-running Next.js request to make replica-selection decisions.</p>
+<p><strong>Router failure behavior:</strong> mark the pilot unhealthy or use an explicitly configured healthy ordinary-routing fallback. Preserve authentication and metering in either path. Never bypass admission to keep the endpoint apparently available.</p>
+
+<h2>5. Phased implementation</h2>
+<p>Owners below are proposed responsibilities, not assigned people. Effort and dates should be estimated after Phase 0 identifies compatibility gaps.</p>
+
+<h3>Phase 0 &mdash; Freeze the experiment and verify compatibility</h3>
+<ul class="check plain">
+<li><strong>P0.1</strong> Record the source commit, catalog ID, exact checkpoint revision, engine image digest, GPU edition/count, tokenizer/chat template, parser flags, context size and cache configuration.</li>
+<li><strong>P0.2</strong> Verify the candidate checkpoint and runtime artifact are complete and accessible in GCS/GCP; verify engine capability locally or in a bounded compatibility job.</li>
+<li><strong>P0.3</strong> Choose and pin the router adapter after comparing upstream options. Verify it actually supports this engine version, not just the same engine family.</li>
+<li><strong>P0.4</strong> Establish a replay fixture: multi-turn conversation, tool-result gaps, shared system prompts across distinct sessions, growing history and four-way helper-agent fan-out.</li>
+<li><strong>P0.5</strong> Specify primary metrics and run conditions before tuning: same model/GPU count/precision, deterministic request schedules, warm-up, cache state, workload seed, repeated runs and held-out sessions.</li>
+<li><strong>P0.6</strong> Set pilot runtime/cost limits and an independent cleanup deadline. Confirm no customer resources will be adopted into the pilot.</li>
+</ul>
+
+<h3>Phase 1 &mdash; Define the serving contract and isolation</h3>
+<ul class="check plain">
+<li><strong>P1.1</strong> Add an explicit <code>harness_aware_serving</code> feature flag with a <strong>false</strong> fallback and a pilot organization allowlist.</li>
+<li><strong>P1.2</strong> Define an optional versioned <code>servingPolicy</code> on the deployment: <code>mode</code>, policy version, runtime/recipe identity, replica topology, routing policy, queue/deadline limits and experiment evidence ID.</li>
+<li><strong>P1.3</strong> Document <code>X-Runara-Session-Id</code>: optional opaque bounded identifier, stable across one agent conversation; a separate ID for each helper conversation.</li>
+<li><strong>P1.4</strong> Namespace affinity by authenticated deployment/tenant and runtime identity. The header is a routing hint, never authorization.</li>
+<li><strong>P1.5</strong> Define supported endpoints and fields: chat completions, model listing, tools/tool results, reasoning controls, JSON responses and streaming.</li>
+<li><strong>P1.6</strong> Define behavior for invalid sessions, overload, request cancellation, engine failure and router restart.</li>
+</ul>
+
+<h3>Phase 2 &mdash; Provision an isolated two-replica pilot</h3>
+<ul class="check plain">
+<li><strong>P2.1</strong> Extend the optimizer startup generator through an opt-in branch; preserve the default <code>least_conn</code> path.</li>
+<li><strong>P2.2</strong> Install a pinned local routing service between the existing authenticated proxy and the replica ports.</li>
+<li><strong>P2.3</strong> Enable native prefix caching only on the new verified recipe. Never silently alter the measured launch command of an existing catalog row.</li>
+<li><strong>P2.4</strong> Health-check each engine and perform an actual model request before admitting it.</li>
+<li><strong>P2.5</strong> Preserve bounded capacity search, startup deadline, cancellation and losing-resource cleanup.</li>
+<li><strong>P2.6</strong> Ensure Stop drains admissions and in-flight usage, takes the final meter sample, and tears down router, engines and VM.</li>
+</ul>
+
+<h3>Phase 3 &mdash; Session-aware routing and safe overload behavior</h3>
+<ul class="check plain">
+<li><strong>P3.1</strong> Add a stable session-affinity policy behind an adapter. Deterministic rendezvous hashing over healthy stable replica IDs is an acceptable minimal fallback.</li>
+<li><strong>P3.2</strong> Preserve affinity only within a bounded queue/deadline budget. An overloaded replica may spill to another healthy replica; record this as a possible cold-cache fallback, not a cache hit.</li>
+<li><strong>P3.3</strong> Exclude unhealthy/draining replicas. Allow a surviving replica to recompute the prompt after failure.</li>
+<li><strong>P3.4</strong> Preserve immediate SSE delivery, tool-call deltas, reasoning content and cancellation.</li>
+<li><strong>P3.5</strong> Keep cache compatibility keys tied to checkpoint, tokenizer/template, precision, engine/KV layout, adapter and relevant launch configuration.</li>
+<li><strong>P3.6</strong> Bound request bodies, queues and diagnostic state.</li>
+</ul>
+
+<h3>Phase 4 &mdash; Telemetry and billing correctness</h3>
+<ul class="check plain">
+<li><strong>P4.1</strong> Add request-level queue time, TTFT, end-to-end latency, errors and output rate. Distinguish p95/p99 TTFT, p90 request-mean TPOT and p99 individual ITL.</li>
+<li><strong>P4.2</strong> Add engine-confirmed cached/uncached prompt-token observations, cache capacity/evictions where exposed, routing policy, replica health and spillover counts.</li>
+<li><strong>P4.3</strong> Audit the exact engine version's counter semantics. Determine whether prompt counters include cached tokens.</li>
+<li><strong>P4.4</strong> Keep one billing authority: existing dedicated cumulative meter and ledger. Routing observations are analytics, not a second invoice.</li>
+<li><strong>P4.5</strong> Cover replica restart, counter reset, unreachable replica, cancellation, partial stream and final drain.</li>
+<li><strong>P4.6</strong> Send bounded interval aggregates to Convex; keep detailed latency histograms in monitoring.</li>
+<li><strong>P4.7</strong> Show provider operating cost separately from customer wallet charges.</li>
+</ul>
+
+<h3>Phase 5 &mdash; Benchmark against a strong baseline</h3>
+<div class="scroll"><table>
+<thead><tr><th>Arm</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td>A: current <code>least_conn</code>, native cache enabled where supported</td><td>Quantify the change from today's routing path.</td></tr>
+<tr><td>B: well-tuned open-source load/cache-aware routing</td><td>Establish the competitive baseline.</td></tr>
+<tr><td>C: selected Runara session-aware policy</td><td>Measure the policy's incremental benefit. It may match B; report that honestly.</td></tr>
+</tbody></table></div>
+<ul class="check plain">
+<li><strong>P5.1</strong> Separate cold-start, warmed-cache, tool-gap, memory-pressure, overload and helper-agent-burst experiments.</li>
+<li><strong>P5.2</strong> Use at least three independent runs per key cell and held-out sessions. Record per-run distributions and uncertainty.</li>
+<li><strong>P5.3</strong> Validate full agent task completion, tool-call format/arguments and reasoning behavior.</li>
+<li><strong>P5.4</strong> Measure actual GPU-hours and all attributable router/CPU/storage/network costs per completed workload.</li>
+<li><strong>P5.5</strong> Save immutable evidence with workload/trace hashes, source revisions, image and model identities.</li>
+<li><strong>P5.6</strong> Verify import failure leaves existing optimizer data usable.</li>
+</ul>
+
+<h3>Phase 6 &mdash; Opt-in beta in existing screens</h3>
+<ul class="check plain">
+<li><strong>P6.1</strong> Optimizer: expose an agent workload only when an eligible measured profile exists.</li>
+<li><strong>P6.2</strong> Deploy dialog: show actual hardware, replica count, serving policy, supported cloud and frozen billing quote.</li>
+<li><strong>P6.3</strong> Deployments: retain current lifecycle and failure display; add active policy, ready/total replicas, observed cache reuse, latency/queue metrics.</li>
+<li><strong>P6.4</strong> Docs: show a working HTTP example with a stable session header, no-header fallback, helper-session guidance.</li>
+<li><strong>P6.5</strong> Usage: show actual wallet spend and request/token measurements. Label experiment-derived savings separately.</li>
+<li><strong>P6.6</strong> Canary to an internal organization, then one willing pilot customer; collect feedback before any general enablement.</li>
+</ul>
+
+<h3>Phase 7 &mdash; Cache offload and capacity management (after pilot)</h3>
+<ul class="check plain">
+<li><strong>P7.1</strong> If cache eviction during tool gaps is a material cost, evaluate a compatible LMCache/upstream backend.</li>
+<li><strong>P7.2</strong> Add storage quotas, encryption/access boundaries, TTL/deletion and a tested cold-recompute fallback.</li>
+<li><strong>P7.3</strong> Introduce a logical serving pool and replica registry across VMs/pods.</li>
+<li><strong>P7.4</strong> Redesign meter membership with immutable replica identities, last-sample acknowledgements and idempotent removal before autoscaling.</li>
+<li><strong>P7.5</strong> Add queue-based autoscaling with min/max replicas, cooldowns, budget caps, actual model warm-up estimates.</li>
+<li><strong>P7.6</strong> Begin reactive scaling plus an explicit warm reserve.</li>
+<li><strong>P7.7</strong> Design router high availability and consistent affinity/membership.</li>
+</ul>
+
+<h3>Phase 8 &mdash; BYOC, additional engines/hardware and Hosted models</h3>
+<ul class="check plain">
+<li><strong>P8.1</strong> Add GCP BYOC using the same signed/validated policy, private networking and least-privilege access.</li>
+<li><strong>P8.2</strong> Extend to AWS after revalidating VM topology, runtime, storage, pricing and drain behavior.</li>
+<li><strong>P8.3</strong> Qualify SGLang separately. Preserve AMD/ATOM and TPU catalog paths.</li>
+<li><strong>P8.4</strong> Adapt Hosted models separately using their request journal, tenant-safe cache boundaries and GKE lifecycle.</li>
+</ul>
+
+<h2>6. Suggested implementation boundaries</h2>
+<p>Proposed names below are design suggestions, not files that already exist.</p>
+<div class="scroll"><table>
+<thead><tr><th>Location</th><th>Responsibility</th></tr></thead>
+<tbody>
+<tr><td><code>infra/serving/router/</code></td><td>Pinned router configuration/adapter, supervisor unit, deployment-local health and stream tests.</td></tr>
+<tr><td><code>infra/serving/profiles/</code></td><td>Versioned runtime capabilities and full agent-recipe identity; no browser-supplied shell commands.</td></tr>
+<tr><td><code>convex/lib/servingPolicy.ts</code></td><td>Pure policy validation and compatibility resolution.</td></tr>
+<tr><td><code>convex/servingPolicies.ts</code></td><td>Organization-gated policy configuration and read models.</td></tr>
+<tr><td>Existing optimizer schema/startup generators</td><td>Optional policy snapshot and opt-in upstream wiring. Keep non-pilot startup byte-for-byte equivalent where practical.</td></tr>
+<tr><td><code>scripts/tests/</code> + a small router test suite</td><td>Offline regressions and real-socket streaming/failure tests, wired into the new CI.</td></tr>
+<tr><td>Sibling Layer 4 repository</td><td>Agent workload definitions, replay/agent-eval evidence and producer schema. App consumes exports; it does not duplicate the benchmark model.</td></tr>
+<tr><td><code>docs/</code></td><td>Session contract, compatibility matrix, pilot runbook, rollback and release evidence.</td></tr>
+</tbody></table></div>
+
+<p><strong>Durable state versus transient state</strong></p>
+<ul>
+<li><strong>Deployment:</strong> optional policy version, evidence ID, exact model/runtime, selected topology and rollout state. Absent fields mean legacy mode.</li>
+<li><strong>Policy/release metadata:</strong> immutable configuration and experiment provenance; select through an explicit activation operation.</li>
+<li><strong>Aggregates:</strong> bounded deployment/time buckets for request counts, cache-token quantities, latency histograms, spillovers and observed infrastructure cost.</li>
+<li><strong>Transient routing:</strong> local or upstream-managed replica health and affinity; bounded, reconstructible and not authoritative for money.</li>
+<li><strong>Billing:</strong> existing ledger/cursors remain authoritative. Schema migration must not reinterpret historical usage or quotes.</li>
+</ul>
+<p>Before adding a table, check whether the existing deployment/usage model can hold a backwards-compatible field. Do not put prompts, raw API keys or unbounded session histories in Convex.</p>
+
+<h2>7. Proposed PR sequence</h2>
+<div class="scroll"><table>
+<thead><tr><th>PR</th><th>Contents</th><th>Merge requirement</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Experiment manifest, session contract, explicit-off flag, policy types and offline tests</td><td>No cloud behavior change; legacy tests pass.</td></tr>
+<tr><td>2</td><td>Opt-in GCP startup wiring, pinned router artifact, two-replica readiness/drain</td><td>Real-socket tests and a bounded internal deployment test.</td></tr>
+<tr><td>3</td><td>Affinity, overload/deadline handling and failure semantics</td><td>Repeated turns, unhealthy replicas, cancellation and streaming verified.</td></tr>
+<tr><td>4</td><td>Telemetry adapters and billing reconciliation tests</td><td>No double debit; cache-token semantics documented for exact runtime.</td></tr>
+<tr><td>5</td><td>Layer 4 agent evidence/export and validated app import</td><td>Held-out results; existing catalog and planner parity preserved.</td></tr>
+<tr><td>6</td><td>Optimizer/deployment/Docs/Usage beta controls</td><td>End-to-end user flow, internal canary, rollback exercise.</td></tr>
+<tr><td>Later</td><td>Offload, multi-node pools/autoscaling, BYOC, AWS and hosted adoption</td><td>Separate measured justification and release gate for each.</td></tr>
+</tbody></table></div>
+<p>PRs 2&ndash;4 may overlap in implementation, but they do not constitute a customer-ready feature until the shared release gates pass. No automatic merge to main or production rollout is implied by this plan.</p>
+
+<h2>8. Release gates and rollback</h2>
+<p><strong>Required before beta</strong></p>
+<ul class="check plain">
+<li>Exact checkpoint/image/hardware and changed cache/router recipe recorded and tested.</li>
+<li>No cross-deployment/session authorization leak; identical client session IDs cannot cross tenant boundaries.</li>
+<li>No unsupported change to model outputs, tool-call formatting or reasoning behavior.</li>
+<li>Both streamed and non-streamed requests work; slow clients and disconnects cannot exhaust the gateway.</li>
+<li>Request accounting reconciles across replica restarts, retries, missing usage and drain; no guessed or duplicate charges.</li>
+<li>Startup and cloud capacity failures terminate with a useful deployment-specific reason; Stop cannot leave paid orphan resources.</li>
+<li>Metrics distinguish cache affinity, actual reuse, queueing and missing observations.</li>
+<li>Held-out comparison is reproducible; operating-cost claims include warm capacity and added infrastructure.</li>
+<li>CI, build, preview smoke and real-cloud pilot checks pass.</li>
+</ul>
+
+<p><strong>Rollback procedure to implement and rehearse</strong></p>
+<ol>
+<li>Disable admission of new harness-aware deployments for the pilot organization. This must not silently mutate active tariffs or kill running streams.</li>
+<li>For a running affected deployment, drain and switch through an explicit operation to healthy ordinary routing on the same verified engines, or stop it safely if a fallback is unavailable.</li>
+<li>If changing cache flags requires engine restart, perform it as a controlled rollout; flag changes alone cannot safely apply runtime settings.</li>
+<li>Retain existing billing journals/cursors and evidence. Mark lost cache as cold; never invent recovered usage or replay generation automatically.</li>
+<li>Remove experiment-owned cloud resources and verify the resource list is empty. Re-enable only after the regression has been reproduced and tested.</li>
+</ol>
+
+<h2>9. Decisions still needed</h2>
+<ol>
+<li>Confirm dedicated GCP is the initial delivery target; shared hosted pools follow later.</li>
+<li>Validate the proposed Qwen BF16/RTX PRO 6000 pilot or choose the best-supported catalog alternative after Phase 0.</li>
+<li>Select the exact router adapter after testing; no commitment to Dynamo, llm-d, SGLang Router or a new distributed system before compatibility evidence.</li>
+<li>Set a maximum GPU budget/runtime for the pilot and name the runtime, platform, billing and validation owners.</li>
+<li>Agree the evidence threshold for customer beta and the separate threshold for claiming the proposed 1.3&times; advantage.</li>
+</ol>
+<p><strong>Immediate next action:</strong> implement PR 1 and the Phase 0 compatibility checklist. Then provision the bounded two-replica pilot. Leave cache offload, autoscaling and a new top-level tab out of that first change.</p>
+
+<h2>10. References</h2>
+<ul>
+<li><a href="harness-aware-serving-v3.html">Product proposal v3</a>: source of the product direction and unproven 1.3&times; target; not evidence of implemented features.</li>
+<li><a href="https://github.com/vllm-project/vllm/blob/main/docs/features/automatic_prefix_caching.md">vLLM automatic prefix caching</a>: shared-prefix reuse; inspect the pinned version before selecting flags/metrics.</li>
+<li><a href="https://docs.vllm.ai/en/v0.15.0/design/prefix_caching/">vLLM cache-isolation design</a>: rationale for cache isolation; validate the selected runtime's actual API.</li>
+<li><a href="https://github.com/sgl-project/sglang/issues/34513">SGLang session-affinity discussion</a>: upstream discussion highlighting why approximate prefix-routing state is not necessarily actual cache residency; not a supported-feature guarantee.</li>
+<li><a href="https://docs.lmcache.ai/getting_started/compatibility.html">LMCache compatibility matrix</a>: engine/connector compatibility must be pinned and tested before offload is introduced.</li>
+</ul>
+<p class="note">Repository source links above refer to the inspected dev baseline. Live prices, capacity, cluster inventory, current API behavior and billing-ledger health were not probed for this planning task.</p>
+</div>
+</body></html>
