@@ -1,0 +1,650 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>AMD MI325X Characterization</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg:        #F4F5F7;
+  --surface:   #FFFFFF;
+  --surface-2: #ECEDF1;
+  --border:    rgba(0,0,0,0.08);
+  --fg:        #111827;
+  --fg-muted:  #6B7280;
+  --amd:       #E0202E;
+  --amd-dim:   #FECDD3;
+  --vllm:      #2563EB;
+  --vllm-dim:  #DBEAFE;
+  --sglang:    #0D9488;
+  --sglang-dim:#CCFBF1;
+  --atom:      #9333EA;
+  --atom-dim:  #EDE9FE;
+  --runara:    #E0202E;
+  --runara-dim:#FEF2F2;
+  --up:        #15803D;
+  --up-bg:     #F0FDF4;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #0C0D12;
+    --surface:   #161820;
+    --surface-2: #1E2130;
+    --border:    rgba(255,255,255,0.08);
+    --fg:        #E6E8F0;
+    --fg-muted:  #8891A8;
+    --amd:       #FF4D57;
+    --amd-dim:   #3A1013;
+    --vllm:      #60A5FA;
+    --vllm-dim:  #1E3A5F;
+    --sglang:    #2DD4BF;
+    --sglang-dim:#134E4A;
+    --atom:      #C084FC;
+    --atom-dim:  #2D1B4E;
+    --runara:    #FF4D57;
+    --runara-dim:#3A1013;
+    --up:        #4ADE80;
+    --up-bg:     #052E16;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:        #0C0D12;
+  --surface:   #161820;
+  --surface-2: #1E2130;
+  --border:    rgba(255,255,255,0.08);
+  --fg:        #E6E8F0;
+  --fg-muted:  #8891A8;
+  --amd:       #FF4D57;
+  --amd-dim:   #3A1013;
+  --vllm:      #60A5FA;
+  --vllm-dim:  #1E3A5F;
+  --sglang:    #2DD4BF;
+  --sglang-dim:#134E4A;
+  --atom:      #C084FC;
+  --atom-dim:  #2D1B4E;
+  --runara:    #FF4D57;
+  --runara-dim:#3A1013;
+  --up:        #4ADE80;
+  --up-bg:     #052E16;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  padding-block: 0;
+  padding-left: max(16px, env(safe-area-inset-left,0px));
+  padding-right: max(16px, env(safe-area-inset-right,0px));
+}
+.mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+
+/* ── Page header ───────────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 20px 0 14px;
+  border-bottom: 2px solid var(--amd);
+  margin-bottom: 20px;
+}
+.header-left h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+.header-left h1 em { font-style: normal; color: var(--amd); }
+.header-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  letter-spacing: 0.3px;
+}
+.chip.amd { background: var(--amd-dim); color: var(--amd); }
+
+/* ── Stat tiles ─────────────────────────────────────────────────────────── */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.tile-label { font-size: 10.5px; font-weight: 600; color: var(--fg-muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+.tile-val { font-size: 24px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; letter-spacing: -1px; line-height: 1; }
+.tile-val span { font-size: 13px; font-weight: 400; color: var(--fg-muted); letter-spacing: 0; }
+.tile-sub { font-size: 11px; color: var(--fg-muted); margin-top: 5px; line-height: 1.4; }
+.c-amd    { color: var(--amd); }
+.c-vllm   { color: var(--vllm); }
+.c-sglang { color: var(--sglang); }
+.c-atom   { color: var(--atom); }
+.c-up     { color: var(--up); }
+.c-muted  { color: var(--fg-muted); }
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+.tabs-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
+.tab-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+.tab-btn:hover { color: var(--fg); }
+.tab-btn.active { background: var(--amd); color: #fff; border-color: var(--amd); }
+
+.wl-tabs { margin: 10px 0 16px; }
+.wl-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.wl-btn:hover { color: var(--fg); }
+.wl-btn.active { background: var(--surface-2); color: var(--fg); }
+
+/* ── Legend ─────────────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  align-items: center;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Chart section ──────────────────────────────────────────────────────── */
+.chart-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 14px;
+  min-width: 0;
+}
+.chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* Bar grid: label | bar | tput | ttft | tpot | uplift */
+.bar-row {
+  display: grid;
+  grid-template-columns: 190px 1fr 76px 76px 76px 80px;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.bar-row:last-of-type { border-bottom: none; }
+.bar-row.hdr { padding-bottom: 6px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
+
+.bar-label {
+  font-size: 12.5px;
+  line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.bar-label .engine-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  width: fit-content;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.bar-label .config-sub { font-size: 11px; color: var(--fg-muted); }
+.tag-vllm   { background: var(--vllm-dim);   color: var(--vllm); }
+.tag-sglang { background: var(--sglang-dim); color: var(--sglang); }
+.tag-atom   { background: var(--atom-dim);   color: var(--atom); }
+.tag-runara { background: var(--runara-dim); color: var(--runara); font-weight: 700; }
+.tag-fail   { background: #FEE2E2; color: #991B1B; }
+
+.bar-track {
+  position: relative;
+  height: 26px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  min-width: 0;
+  overflow: hidden;
+}
+.bar-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  border-radius: 4px;
+  transition: width 0.45s cubic-bezier(.25,.46,.45,.94);
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+}
+.bar-fill span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+}
+.fill-vllm   { background: var(--vllm);   }
+.fill-sglang { background: var(--sglang); }
+.fill-atom   { background: var(--atom);   }
+.fill-runara { background: var(--runara); }
+.fill-fail   { background: var(--surface-2); width: 100% !important; }
+
+.metric-cell {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.metric-cell .unit { font-size: 10px; }
+.uplift-cell {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--up);
+  text-align: right;
+  white-space: nowrap;
+}
+.uplift-cell.none { color: var(--fg-muted); font-weight: 400; }
+
+.col-hdr {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  text-align: right;
+}
+.col-hdr.left { text-align: left; }
+
+/* Runara row highlight */
+.bar-row.runara-row {
+  background: var(--up-bg);
+  border-radius: 6px;
+  padding-left: 6px;
+  padding-right: 6px;
+  margin-left: -6px;
+  margin-right: -6px;
+  border-bottom: none;
+  margin-bottom: 2px;
+}
+.bar-row.runara-row + .bar-row { border-top: 1px solid var(--border); }
+
+/* Fail row */
+.bar-row.fail-row .bar-label span { color: #991B1B; }
+.fail-placeholder {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  font-size: 11px;
+  color: #991B1B;
+  font-style: italic;
+  padding-left: 8px;
+}
+
+/* Notes */
+.notes {
+  background: var(--surface-2);
+  border-left: 3px solid var(--amd);
+  border-radius: 0 6px 6px 0;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.65;
+  margin-top: 4px;
+}
+.notes strong { color: var(--fg); }
+.notes .n-atom { color: var(--atom); font-weight: 600; }
+.notes .n-vllm { color: var(--vllm); font-weight: 600; }
+.notes .n-sglang { color: var(--sglang); font-weight: 600; }
+.notes .n-runara { color: var(--runara); font-weight: 600; }
+
+/* Summary strip under chart */
+.chart-summary {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.chart-summary strong { color: var(--fg); }
+
+/* Mobile */
+@media (max-width: 680px) {
+  .bar-row {
+    grid-template-columns: 160px 1fr 60px 60px;
+  }
+  .bar-row .metric-cell:nth-child(5),
+  .bar-row .col-hdr:nth-child(5) { display: none; }
+  .uplift-cell { font-size: 11px; }
+}
+@media (max-width: 480px) {
+  .bar-row {
+    grid-template-columns: 1fr 1fr 60px;
+  }
+  .bar-row .metric-cell:nth-child(4),
+  .bar-row .metric-cell:nth-child(5),
+  .bar-row .col-hdr:nth-child(4),
+  .bar-row .col-hdr:nth-child(5) { display: none; }
+  .bar-label { grid-column: 1 / -1; }
+  .bar-track { grid-column: 1 / 3; }
+}
+/* site nav */
+.site-home{position:fixed; top:14px; right:16px; z-index:1000; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--amd); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+.site-home:hover{border-color:var(--amd)}
+.to-top{position:fixed; bottom:18px; right:16px; z-index:1000; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--fg-muted); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
+.to-top:hover{color:var(--amd); border-color:var(--amd)}
+html{scroll-behavior:smooth}
+@media (max-width:560px){ .site-home,.to-top{font-size:11px; padding:6px 10px} }
+</style>
+
+<a class="site-home" href="index.html">&larr; Home</a>
+<a class="to-top" href="#top">&uarr; Top</a>
+
+<div class="page-header" id="top">
+  <div class="header-left">
+    <h1><em>AMD MI325X</em> — M0 Characterization Results</h1>
+    <div class="header-meta">
+      <span class="chip amd">Runara Optimizer</span>
+      <span class="chip">50 successful runs</span>
+      <span class="chip">3 models · bf16</span>
+      <span class="chip">Nov 2026</span>
+    </div>
+  </div>
+</div>
+
+<div class="tiles">
+  <div class="tile">
+    <div class="tile-label">Peak throughput</div>
+    <div class="tile-val mono c-amd">7,993<span> tok/s</span></div>
+    <div class="tile-sub">OLMoE-1B-7B · batch · vllm Runara selected</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">Max Runara uplift</div>
+    <div class="tile-val mono c-up">+61%</div>
+    <div class="tile-sub">DeepSeek RAG · vllm selected vs sglang default</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">Atom engine advantage</div>
+    <div class="tile-val mono c-atom">+48%</div>
+    <div class="tile-sub">Qwen3-30B batch vs sglang default</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">vllm on DeepSeek</div>
+    <div class="tile-val mono c-amd" style="font-size:19px">failed</div>
+    <div class="tile-sub">timeout / crash on batch, chat &amp; RAG</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">sglang baseline</div>
+    <div class="tile-val mono c-sglang">3,296<span> tok/s</span></div>
+    <div class="tile-sub">DeepSeek batch · reliable default on MI325X</div>
+  </div>
+</div>
+
+<!-- Model tabs -->
+<div class="tabs-row" id="modelTabs">
+  <button class="tab-btn active" data-model="qwen3">Qwen3-30B-A3B</button>
+  <button class="tab-btn" data-model="deepseek">DeepSeek-V2-Lite</button>
+  <button class="tab-btn" data-model="olmoe">OLMoE-1B-7B</button>
+</div>
+
+<!-- Legend -->
+<div class="legend" id="legendArea">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--vllm)"></div>vllm default</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--sglang)"></div>sglang default</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--atom)"></div>atom default (AMD ROCm-native · Qwen3 only)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--runara)"></div><strong>Runara selected</strong> (best engine + config)</div>
+</div>
+
+<div class="tabs-row wl-tabs" id="wlTabs"></div>
+<div class="chart-section" id="chartArea"></div>
+<div class="notes" id="notesArea"></div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+// kind: 'vllm'|'sglang'|'atom'|'runara'|'fail'
+// upliftBase: tput of best-default to compute uplift% for 'runara' rows
+const DATA = {
+  qwen3: {
+    name: 'Qwen3-30B-A3B',
+    workloads: {
+      Batch: {
+        rows: [
+          { kind:'vllm',   label:'vllm',   sub:'engine defaults',               tput:3107, ttft:134.4, tpot:36.0 },
+          { kind:'sglang', label:'sglang', sub:'engine defaults',               tput:2277, ttft:137.8, tpot:48.8 },
+          { kind:'atom',   label:'atom',   sub:'AMD ROCm-native · engine defaults', tput:3363, ttft:87.6,  tpot:33.2 },
+          { kind:'runara', label:'Runara', sub:'selected · vllm + ctx + kernels', tput:3518, ttft:118.1, tpot:31.7, upliftBase:3363 },
+        ],
+      },
+      Chat: {
+        rows: [
+          { kind:'vllm',   label:'vllm',   sub:'engine defaults',               tput:1560, ttft:220.3, tpot:36.9 },
+          { kind:'sglang', label:'sglang', sub:'engine defaults',               tput:1570, ttft:120.3, tpot:34.6 },
+          { kind:'atom',   label:'atom',   sub:'AMD ROCm-native · engine defaults', tput:2228, ttft:90.6,  tpot:25.6 },
+          { kind:'runara', label:'Runara', sub:'selected · sglang + ctx + kernels', tput:2367, ttft:86.6, tpot:23.9, upliftBase:2228 },
+        ],
+      },
+      RAG: {
+        rows: [
+          { kind:'vllm',   label:'vllm',   sub:'engine defaults',               tput:1166, ttft:300.9, tpot:49.8 },
+          { kind:'sglang', label:'sglang', sub:'engine defaults',               tput:1019, ttft:268.8, tpot:54.6 },
+          { kind:'atom',   label:'atom',   sub:'AMD ROCm-native · engine defaults', tput:1594, ttft:159.6, tpot:35.8 },
+          { kind:'runara', label:'Runara', sub:'selected · sglang + ctx + kernels', tput:1670, ttft:160.8, tpot:34.1, upliftBase:1594 },
+        ],
+      },
+    },
+    notes: `<span class="n-atom">Atom engine</span> is AMD's ROCm-native serving runtime (MI-series only). It leads all defaults on this model — <strong>+48% over sglang</strong> on batch throughput and best-in-class TTFT across all workloads. <span class="n-runara">Runara selected</span> (vllm + optimised context + kernels) edges atom on batch by ~4.6%, while sglang selected wins chat and RAG. Atom config tuning (Phase 2) has not started — the atom arm uses only engine defaults here.`,
+  },
+  deepseek: {
+    name: 'DeepSeek-V2-Lite',
+    workloads: {
+      Batch: {
+        rows: [
+          { kind:'fail',   label:'vllm',   sub:'engine defaults', failMsg:'timeout — server not healthy after 2400s' },
+          { kind:'sglang', label:'sglang', sub:'engine defaults',  tput:3296, ttft:88.0,  tpot:33.4 },
+          { kind:'runara', label:'Runara', sub:'selected · vllm + ctx + kernels', tput:4726, ttft:100.3, tpot:22.8, upliftBase:3296 },
+        ],
+      },
+      Chat: {
+        rows: [
+          { kind:'fail',   label:'vllm',   sub:'engine defaults', failMsg:'c10::Error crash at startup' },
+          { kind:'sglang', label:'sglang', sub:'engine defaults',  tput:2207, ttft:84.9,  tpot:24.3 },
+          { kind:'runara', label:'Runara', sub:'selected · sglang + ctx + kernels', tput:3226, ttft:71.8, tpot:17.3, upliftBase:2207 },
+        ],
+      },
+      RAG: {
+        rows: [
+          { kind:'fail',   label:'vllm',   sub:'engine defaults', failMsg:'timeout — server not healthy after 2400s' },
+          { kind:'sglang', label:'sglang', sub:'engine defaults',  tput:1454, ttft:167.9, tpot:38.2 },
+          { kind:'runara', label:'Runara', sub:'selected · vllm + ctx + kernels', tput:2349, ttft:136.8, tpot:23.7, upliftBase:1454 },
+        ],
+      },
+    },
+    notes: `<strong>vllm default fails on all three workloads</strong> for DeepSeek-V2-Lite on MI325X — timeout on batch and RAG, c10::Error crash on chat. <span class="n-sglang">sglang</span> is the only reliable default engine for this model. <span class="n-runara">Runara selected</span> recovers vllm for batch and RAG (which default sglang can't use), yielding <strong>+43% batch, +46% chat, +61% RAG</strong> over sglang defaults. The RAG number (2,349 tok/s) is AMD's most competitive datapoint in this characterisation.`,
+  },
+  olmoe: {
+    name: 'OLMoE-1B-7B',
+    workloads: {
+      Batch: {
+        rows: [
+          { kind:'vllm',   label:'vllm',   sub:'engine defaults',  tput:7376, ttft:57.3, tpot:14.9 },
+          { kind:'sglang', label:'sglang', sub:'engine defaults',  tput:5421, ttft:54.0, tpot:20.6 },
+          { kind:'runara', label:'Runara', sub:'selected · vllm + ctx + kernels', tput:7993, ttft:51.2, tpot:13.8, upliftBase:7376 },
+        ],
+      },
+      RAG: {
+        rows: [
+          { kind:'vllm',   label:'vllm',   sub:'engine defaults',  tput:3030, ttft:111.7, tpot:18.9 },
+          { kind:'sglang', label:'sglang', sub:'engine defaults',  tput:2457, ttft:100.7, tpot:22.9 },
+          { kind:'runara', label:'Runara', sub:'selected · sglang + ctx + kernels', tput:3757, ttft:54.9, tpot:15.4, upliftBase:3030 },
+        ],
+      },
+    },
+    notes: `<strong>OLMoE sglang runs were excluded from the final catalog</strong> — all three sglang workloads fell below quality thresholds (trimmed workload). vllm results are retained. <span class="n-runara">Runara selected</span> wins batch on vllm (<strong>+8.3%</strong>) and RAG on sglang with a large TTFT improvement (+51% faster first-token vs vllm default on RAG). No atom engine characterised for this model.`,
+  },
+};
+
+let activeModel = 'qwen3';
+let activeWl = null;
+
+function fmt(n) { return n.toLocaleString(); }
+
+function renderChart() {
+  const model = DATA[activeModel];
+  const wlKeys = Object.keys(model.workloads);
+  if (!activeWl || !model.workloads[activeWl]) activeWl = wlKeys[0];
+
+  // wl tabs
+  const wlEl = document.getElementById('wlTabs');
+  wlEl.innerHTML = '';
+  wlKeys.forEach(wl => {
+    const btn = document.createElement('button');
+    btn.className = 'wl-btn' + (wl === activeWl ? ' active' : '');
+    btn.textContent = wl;
+    btn.onclick = () => { activeWl = wl; renderChart(); };
+    wlEl.appendChild(btn);
+  });
+
+  const rows = model.workloads[activeWl].rows;
+  const maxTput = Math.max(...rows.filter(r => r.kind !== 'fail').map(r => r.tput));
+
+  const chartEl = document.getElementById('chartArea');
+  chartEl.innerHTML = `<div class="chart-title">${model.name} — ${activeWl} workload · all engines, bf16</div>`;
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'bar-row hdr';
+  hdr.innerHTML = `
+    <div class="col-hdr left">Engine / Config</div>
+    <div class="col-hdr">Throughput</div>
+    <div class="col-hdr">TTFT p50</div>
+    <div class="col-hdr">TPOT p50</div>
+    <div class="col-hdr">vs best default</div>
+  `;
+  chartEl.appendChild(hdr);
+
+  rows.forEach(row => {
+    const div = document.createElement('div');
+    const isRunara = row.kind === 'runara';
+    const isFail   = row.kind === 'fail';
+    div.className = 'bar-row' + (isRunara ? ' runara-row' : '') + (isFail ? ' fail-row' : '');
+
+    const tagClass = `tag-${row.kind === 'fail' ? 'fail' : row.kind}`;
+    const tagText  = row.kind === 'fail' ? 'failed' : row.label;
+
+    let barHTML, ttftHTML, tpotHTML, upliftHTML;
+
+    if (isFail) {
+      barHTML = `<div class="bar-track"><div class="fail-placeholder">${row.failMsg}</div></div>`;
+      ttftHTML = `<div class="metric-cell mono c-muted">—</div>`;
+      tpotHTML = `<div class="metric-cell mono c-muted">—</div>`;
+      upliftHTML = `<div class="uplift-cell none">—</div>`;
+    } else {
+      const pct = (row.tput / maxTput) * 100;
+      barHTML = `
+        <div class="bar-track">
+          <div class="bar-fill fill-${row.kind}" style="width:${pct.toFixed(1)}%">
+            <span>${fmt(row.tput)}</span>
+          </div>
+        </div>`;
+      ttftHTML = `<div class="metric-cell mono">${row.ttft.toFixed(1)}<span class="unit"> ms</span></div>`;
+      tpotHTML = `<div class="metric-cell mono">${row.tpot.toFixed(1)}<span class="unit"> ms</span></div>`;
+      if (isRunara && row.upliftBase) {
+        const pctUp = Math.round((row.tput / row.upliftBase - 1) * 100);
+        upliftHTML = `<div class="uplift-cell">+${pctUp}%</div>`;
+      } else {
+        upliftHTML = `<div class="uplift-cell none">baseline</div>`;
+      }
+    }
+
+    div.innerHTML = `
+      <div class="bar-label">
+        <span class="engine-tag ${tagClass}">${tagText}</span>
+        <span class="config-sub">${row.sub}</span>
+      </div>
+      ${barHTML}
+      ${ttftHTML}
+      ${tpotHTML}
+      ${upliftHTML}
+    `;
+    chartEl.appendChild(div);
+  });
+
+  // Summary strip
+  const runaraRow = rows.find(r => r.kind === 'runara');
+  const defaultRows = rows.filter(r => r.kind !== 'runara' && r.kind !== 'fail');
+  if (runaraRow && defaultRows.length) {
+    const bestDefault = defaultRows.reduce((best, r) => r.tput > best.tput ? r : best, defaultRows[0]);
+    const uplift = Math.round((runaraRow.tput / bestDefault.tput - 1) * 100);
+    const ttftDelta = Math.round((1 - runaraRow.ttft / bestDefault.ttft) * 100);
+    const summary = document.createElement('div');
+    summary.className = 'chart-summary';
+    summary.innerHTML = `
+      <span>Runara best: <strong>${fmt(runaraRow.tput)} tok/s</strong></span>
+      <span>vs best default (${bestDefault.label}): <strong class="c-up">+${uplift}% throughput</strong></span>
+      ${ttftDelta !== 0 ? `<span>TTFT: <strong class="${ttftDelta > 0 ? 'c-up' : 'c-amd'}">${ttftDelta > 0 ? '' : '+'}${-ttftDelta}% ${ttftDelta > 0 ? 'faster' : 'slower'}</strong></span>` : ''}
+    `;
+    chartEl.appendChild(summary);
+  }
+
+  document.getElementById('notesArea').innerHTML = model.notes;
+}
+
+document.getElementById('modelTabs').querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#modelTabs .tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeModel = btn.dataset.model;
+    activeWl = null;
+    renderChart();
+  });
+});
+
+renderChart();
+</script>
+
+</body></html>
