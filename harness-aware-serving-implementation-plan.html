@@ -8,7 +8,7 @@
   :root{
     --bg:#f7f5f1; --surface:#ffffff; --border:#e4ded3;
     --fg:#211d16; --fg-dim:#6b6457;
-    --accent:#b5651d; --accent-fg:#fff8ef; --code-bg:#f0ece4;
+    --accent:#b5651d; --accent-fg:#fff8ef; --alt:#2b7a6b; --code-bg:#f0ece4;
     --display:'Source Serif 4', Georgia, serif;
     --body:'IBM Plex Sans', system-ui, sans-serif;
     --mono:'IBM Plex Mono', ui-monospace, monospace;
@@ -18,14 +18,14 @@
     :root:not([data-theme="light"]){
       --bg:#17140f; --surface:#1f1b14; --border:#332c21;
       --fg:#efe9dd; --fg-dim:#a89f8e;
-      --accent:#e3974a; --accent-fg:#1a1208; --code-bg:#272217;
+      --accent:#e3974a; --accent-fg:#1a1208; --alt:#5fc2ad; --code-bg:#272217;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"]{
     --bg:#17140f; --surface:#1f1b14; --border:#332c21;
     --fg:#efe9dd; --fg-dim:#a89f8e;
-    --accent:#e3974a; --accent-fg:#1a1208; --code-bg:#272217;
+    --accent:#e3974a; --accent-fg:#1a1208; --alt:#5fc2ad; --code-bg:#272217;
     color-scheme: dark;
   }
 
@@ -63,6 +63,12 @@
   figure svg{display:block; width:100%; height:auto; max-width:760px; margin:0 auto}
   figcaption{font-size:13px; color:var(--fg-dim); text-align:center; margin-top:8px; font-style:italic}
   svg text{font-family:var(--body)}
+
+  .who{display:inline-block; font-family:var(--mono); font-size:10px; font-weight:500; line-height:1; letter-spacing:.04em; padding:3px 6px 2px; margin-right:4px; border-radius:999px; vertical-align:1px; white-space:nowrap; border:1px solid}
+  .who.m{color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); border-color:color-mix(in srgb, var(--accent) 40%, transparent)}
+  .who.u{color:var(--alt); background:color-mix(in srgb, var(--alt) 12%, transparent); border-color:color-mix(in srgb, var(--alt) 40%, transparent)}
+  .lead{font-family:var(--mono); font-size:10px; font-weight:400; color:var(--fg-dim); margin:0 4px 0 6px; vertical-align:1px; text-transform:uppercase; letter-spacing:.08em}
+  h3 .who{vertical-align:2px}
 
   .site-home{position:fixed; top:14px; right:16px; z-index:1000; font-family:var(--mono); font-size:12px; color:var(--accent); text-decoration:none; border:1px solid var(--border); border-radius:6px; padding:7px 12px; background:var(--surface)}
   .site-home:hover{border-color:var(--accent)}
@@ -189,60 +195,73 @@
 <p><strong>Router failure behavior:</strong> mark the pilot unhealthy or use an explicitly configured healthy ordinary-routing fallback. Preserve authentication and metering in either path. Never bypass admission to keep the endpoint apparently available.</p>
 
 <h2>5. Phased implementation</h2>
-<p>Owners below are proposed responsibilities, not assigned people. Effort and dates should be estimated after Phase 0 identifies compatibility gaps.</p>
+<p>Every item carries an owner tag: <span class="who m">Manas</span> runtime, router, cloud infra, benchmarks and CI; <span class="who u">Utkarsh</span> Convex policy and schema, billing, UI and docs. Two tags means shared, with the first name driving. Effort and dates should be estimated after Phase 0 identifies compatibility gaps.</p>
+<div class="scroll"><table>
+<thead><tr><th>Phase</th><th>Lead</th><th>Manas</th><th>Utkarsh</th><th>Handoff</th></tr></thead>
+<tbody>
+<tr><td>0 &middot; Freeze &amp; verify</td><td><span class="who m">Manas</span></td><td>Recipe pin, artifact/engine check, router choice, metric spec</td><td>Replay fixture, cost cap and cleanup deadline</td><td>Frozen manifest unblocks Phase 2</td></tr>
+<tr><td>1 &middot; Contract</td><td><span class="who u">Utkarsh</span></td><td>Supported endpoints/fields, failure semantics</td><td>Flag, <code>servingPolicy</code>, session header, tenant namespacing</td><td>Runs in parallel with Phase 0; lands as PR 1</td></tr>
+<tr><td>2 &middot; Two-replica pilot</td><td><span class="who m">Manas</span></td><td>Startup wiring, router install, prefix cache, readiness, capacity search</td><td>Stop/drain and final meter sample</td><td>PR 2; needs P1.2 policy shape</td></tr>
+<tr><td>3 &middot; Routing</td><td><span class="who m">Manas</span></td><td>All of it</td><td>Meanwhile: Phase 4 billing work and Phase 6 screens behind the flag</td><td>PR 3</td></tr>
+<tr><td>4 &middot; Telemetry &amp; billing</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span></td><td>Request/cache metrics, counter semantics audit</td><td>Single billing authority, reconciliation tests, Convex aggregates, cost view</td><td>P4.3 result feeds P4.4/P4.5; PR 4</td></tr>
+<tr><td>5 &middot; Benchmark</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span></td><td>Experiment matrix, repeated runs, evidence store</td><td>Task-completion validation, cost per workload, import safety</td><td>PR 5</td></tr>
+<tr><td>6 &middot; Beta UI</td><td><span class="who u">Utkarsh</span></td><td>Canary support</td><td>Optimizer, Deploy dialog, Deployments, Docs, Usage</td><td>PR 6; joint canary and rollback drill</td></tr>
+<tr><td>7 &middot; Offload &amp; scale</td><td><span class="who m">Manas</span></td><td>LMCache, pool/registry, autoscaling, router HA</td><td>Storage quotas/TTL, meter membership redesign</td><td>After pilot only</td></tr>
+<tr><td>8 &middot; BYOC, AWS, Hosted</td><td><span class="who u">Utkarsh</span><span class="who m">Manas</span></td><td>AWS, SGLang/AMD/TPU</td><td>GCP BYOC, Hosted adoption</td><td>Each item gated separately</td></tr>
+</tbody></table></div>
 
-<h3>Phase 0 &mdash; Freeze the experiment and verify compatibility</h3>
+<h3>Phase 0 &mdash; Freeze the experiment and verify compatibility <span class="lead">lead</span><span class="who m">Manas</span></h3>
 <ul class="check plain">
-<li><strong>P0.1</strong> Record the source commit, catalog ID, exact checkpoint revision, engine image digest, GPU edition/count, tokenizer/chat template, parser flags, context size and cache configuration.</li>
-<li><strong>P0.2</strong> Verify the candidate checkpoint and runtime artifact are complete and accessible in GCS/GCP; verify engine capability locally or in a bounded compatibility job.</li>
-<li><strong>P0.3</strong> Choose and pin the router adapter after comparing upstream options. Verify it actually supports this engine version, not just the same engine family.</li>
-<li><strong>P0.4</strong> Establish a replay fixture: multi-turn conversation, tool-result gaps, shared system prompts across distinct sessions, growing history and four-way helper-agent fan-out.</li>
-<li><strong>P0.5</strong> Specify primary metrics and run conditions before tuning: same model/GPU count/precision, deterministic request schedules, warm-up, cache state, workload seed, repeated runs and held-out sessions.</li>
-<li><strong>P0.6</strong> Set pilot runtime/cost limits and an independent cleanup deadline. Confirm no customer resources will be adopted into the pilot.</li>
+<li><strong>P0.1</strong> <span class="who m">Manas</span> Record the source commit, catalog ID, exact checkpoint revision, engine image digest, GPU edition/count, tokenizer/chat template, parser flags, context size and cache configuration.</li>
+<li><strong>P0.2</strong> <span class="who m">Manas</span> Verify the candidate checkpoint and runtime artifact are complete and accessible in GCS/GCP; verify engine capability locally or in a bounded compatibility job.</li>
+<li><strong>P0.3</strong> <span class="who m">Manas</span> Choose and pin the router adapter after comparing upstream options. Verify it actually supports this engine version, not just the same engine family.</li>
+<li><strong>P0.4</strong> <span class="who u">Utkarsh</span> Establish a replay fixture: multi-turn conversation, tool-result gaps, shared system prompts across distinct sessions, growing history and four-way helper-agent fan-out.</li>
+<li><strong>P0.5</strong> <span class="who m">Manas</span> Specify primary metrics and run conditions before tuning: same model/GPU count/precision, deterministic request schedules, warm-up, cache state, workload seed, repeated runs and held-out sessions.</li>
+<li><strong>P0.6</strong> <span class="who u">Utkarsh</span> Set pilot runtime/cost limits and an independent cleanup deadline. Confirm no customer resources will be adopted into the pilot.</li>
 </ul>
 
-<h3>Phase 1 &mdash; Define the serving contract and isolation</h3>
+<h3>Phase 1 &mdash; Define the serving contract and isolation <span class="lead">lead</span><span class="who u">Utkarsh</span></h3>
 <ul class="check plain">
-<li><strong>P1.1</strong> Add an explicit <code>harness_aware_serving</code> feature flag with a <strong>false</strong> fallback and a pilot organization allowlist.</li>
-<li><strong>P1.2</strong> Define an optional versioned <code>servingPolicy</code> on the deployment: <code>mode</code>, policy version, runtime/recipe identity, replica topology, routing policy, queue/deadline limits and experiment evidence ID.</li>
-<li><strong>P1.3</strong> Document <code>X-Runara-Session-Id</code>: optional opaque bounded identifier, stable across one agent conversation; a separate ID for each helper conversation.</li>
-<li><strong>P1.4</strong> Namespace affinity by authenticated deployment/tenant and runtime identity. The header is a routing hint, never authorization.</li>
-<li><strong>P1.5</strong> Define supported endpoints and fields: chat completions, model listing, tools/tool results, reasoning controls, JSON responses and streaming.</li>
-<li><strong>P1.6</strong> Define behavior for invalid sessions, overload, request cancellation, engine failure and router restart.</li>
+<li><strong>P1.1</strong> <span class="who u">Utkarsh</span> Add an explicit <code>harness_aware_serving</code> feature flag with a <strong>false</strong> fallback and a pilot organization allowlist.</li>
+<li><strong>P1.2</strong> <span class="who u">Utkarsh</span> Define an optional versioned <code>servingPolicy</code> on the deployment: <code>mode</code>, policy version, runtime/recipe identity, replica topology, routing policy, queue/deadline limits and experiment evidence ID.</li>
+<li><strong>P1.3</strong> <span class="who u">Utkarsh</span> Document <code>X-Runara-Session-Id</code>: optional opaque bounded identifier, stable across one agent conversation; a separate ID for each helper conversation.</li>
+<li><strong>P1.4</strong> <span class="who u">Utkarsh</span> Namespace affinity by authenticated deployment/tenant and runtime identity. The header is a routing hint, never authorization.</li>
+<li><strong>P1.5</strong> <span class="who m">Manas</span> Define supported endpoints and fields: chat completions, model listing, tools/tool results, reasoning controls, JSON responses and streaming.</li>
+<li><strong>P1.6</strong> <span class="who m">Manas</span> Define behavior for invalid sessions, overload, request cancellation, engine failure and router restart.</li>
 </ul>
 
-<h3>Phase 2 &mdash; Provision an isolated two-replica pilot</h3>
+<h3>Phase 2 &mdash; Provision an isolated two-replica pilot <span class="lead">lead</span><span class="who m">Manas</span></h3>
 <ul class="check plain">
-<li><strong>P2.1</strong> Extend the optimizer startup generator through an opt-in branch; preserve the default <code>least_conn</code> path.</li>
-<li><strong>P2.2</strong> Install a pinned local routing service between the existing authenticated proxy and the replica ports.</li>
-<li><strong>P2.3</strong> Enable native prefix caching only on the new verified recipe. Never silently alter the measured launch command of an existing catalog row.</li>
-<li><strong>P2.4</strong> Health-check each engine and perform an actual model request before admitting it.</li>
-<li><strong>P2.5</strong> Preserve bounded capacity search, startup deadline, cancellation and losing-resource cleanup.</li>
-<li><strong>P2.6</strong> Ensure Stop drains admissions and in-flight usage, takes the final meter sample, and tears down router, engines and VM.</li>
+<li><strong>P2.1</strong> <span class="who m">Manas</span> Extend the optimizer startup generator through an opt-in branch; preserve the default <code>least_conn</code> path.</li>
+<li><strong>P2.2</strong> <span class="who m">Manas</span> Install a pinned local routing service between the existing authenticated proxy and the replica ports.</li>
+<li><strong>P2.3</strong> <span class="who m">Manas</span> Enable native prefix caching only on the new verified recipe. Never silently alter the measured launch command of an existing catalog row.</li>
+<li><strong>P2.4</strong> <span class="who m">Manas</span> Health-check each engine and perform an actual model request before admitting it.</li>
+<li><strong>P2.5</strong> <span class="who m">Manas</span> Preserve bounded capacity search, startup deadline, cancellation and losing-resource cleanup.</li>
+<li><strong>P2.6</strong> <span class="who u">Utkarsh</span> Ensure Stop drains admissions and in-flight usage, takes the final meter sample, and tears down router, engines and VM.</li>
 </ul>
 
-<h3>Phase 3 &mdash; Session-aware routing and safe overload behavior</h3>
+<h3>Phase 3 &mdash; Session-aware routing and safe overload behavior <span class="lead">lead</span><span class="who m">Manas</span></h3>
 <ul class="check plain">
-<li><strong>P3.1</strong> Add a stable session-affinity policy behind an adapter. Deterministic rendezvous hashing over healthy stable replica IDs is an acceptable minimal fallback.</li>
-<li><strong>P3.2</strong> Preserve affinity only within a bounded queue/deadline budget. An overloaded replica may spill to another healthy replica; record this as a possible cold-cache fallback, not a cache hit.</li>
-<li><strong>P3.3</strong> Exclude unhealthy/draining replicas. Allow a surviving replica to recompute the prompt after failure.</li>
-<li><strong>P3.4</strong> Preserve immediate SSE delivery, tool-call deltas, reasoning content and cancellation.</li>
-<li><strong>P3.5</strong> Keep cache compatibility keys tied to checkpoint, tokenizer/template, precision, engine/KV layout, adapter and relevant launch configuration.</li>
-<li><strong>P3.6</strong> Bound request bodies, queues and diagnostic state.</li>
+<li><strong>P3.1</strong> <span class="who m">Manas</span> Add a stable session-affinity policy behind an adapter. Deterministic rendezvous hashing over healthy stable replica IDs is an acceptable minimal fallback.</li>
+<li><strong>P3.2</strong> <span class="who m">Manas</span> Preserve affinity only within a bounded queue/deadline budget. An overloaded replica may spill to another healthy replica; record this as a possible cold-cache fallback, not a cache hit.</li>
+<li><strong>P3.3</strong> <span class="who m">Manas</span> Exclude unhealthy/draining replicas. Allow a surviving replica to recompute the prompt after failure.</li>
+<li><strong>P3.4</strong> <span class="who m">Manas</span> Preserve immediate SSE delivery, tool-call deltas, reasoning content and cancellation.</li>
+<li><strong>P3.5</strong> <span class="who m">Manas</span> Keep cache compatibility keys tied to checkpoint, tokenizer/template, precision, engine/KV layout, adapter and relevant launch configuration.</li>
+<li><strong>P3.6</strong> <span class="who m">Manas</span> Bound request bodies, queues and diagnostic state.</li>
 </ul>
 
-<h3>Phase 4 &mdash; Telemetry and billing correctness</h3>
+<h3>Phase 4 &mdash; Telemetry and billing correctness <span class="lead">lead</span><span class="who m">Manas</span><span class="who u">Utkarsh</span></h3>
 <ul class="check plain">
-<li><strong>P4.1</strong> Add request-level queue time, TTFT, end-to-end latency, errors and output rate. Distinguish p95/p99 TTFT, p90 request-mean TPOT and p99 individual ITL.</li>
-<li><strong>P4.2</strong> Add engine-confirmed cached/uncached prompt-token observations, cache capacity/evictions where exposed, routing policy, replica health and spillover counts.</li>
-<li><strong>P4.3</strong> Audit the exact engine version's counter semantics. Determine whether prompt counters include cached tokens.</li>
-<li><strong>P4.4</strong> Keep one billing authority: existing dedicated cumulative meter and ledger. Routing observations are analytics, not a second invoice.</li>
-<li><strong>P4.5</strong> Cover replica restart, counter reset, unreachable replica, cancellation, partial stream and final drain.</li>
-<li><strong>P4.6</strong> Send bounded interval aggregates to Convex; keep detailed latency histograms in monitoring.</li>
-<li><strong>P4.7</strong> Show provider operating cost separately from customer wallet charges.</li>
+<li><strong>P4.1</strong> <span class="who m">Manas</span> Add request-level queue time, TTFT, end-to-end latency, errors and output rate. Distinguish p95/p99 TTFT, p90 request-mean TPOT and p99 individual ITL.</li>
+<li><strong>P4.2</strong> <span class="who m">Manas</span> Add engine-confirmed cached/uncached prompt-token observations, cache capacity/evictions where exposed, routing policy, replica health and spillover counts.</li>
+<li><strong>P4.3</strong> <span class="who m">Manas</span> Audit the exact engine version's counter semantics. Determine whether prompt counters include cached tokens.</li>
+<li><strong>P4.4</strong> <span class="who u">Utkarsh</span> Keep one billing authority: existing dedicated cumulative meter and ledger. Routing observations are analytics, not a second invoice.</li>
+<li><strong>P4.5</strong> <span class="who u">Utkarsh</span> Cover replica restart, counter reset, unreachable replica, cancellation, partial stream and final drain.</li>
+<li><strong>P4.6</strong> <span class="who u">Utkarsh</span> Send bounded interval aggregates to Convex; keep detailed latency histograms in monitoring.</li>
+<li><strong>P4.7</strong> <span class="who u">Utkarsh</span> Show provider operating cost separately from customer wallet charges.</li>
 </ul>
 
-<h3>Phase 5 &mdash; Benchmark against a strong baseline</h3>
+<h3>Phase 5 &mdash; Benchmark against a strong baseline <span class="lead">lead</span><span class="who m">Manas</span><span class="who u">Utkarsh</span></h3>
 <div class="scroll"><table>
 <thead><tr><th>Arm</th><th>Purpose</th></tr></thead>
 <tbody>
@@ -251,41 +270,41 @@
 <tr><td>C: selected Runara session-aware policy</td><td>Measure the policy's incremental benefit. It may match B; report that honestly.</td></tr>
 </tbody></table></div>
 <ul class="check plain">
-<li><strong>P5.1</strong> Separate cold-start, warmed-cache, tool-gap, memory-pressure, overload and helper-agent-burst experiments.</li>
-<li><strong>P5.2</strong> Use at least three independent runs per key cell and held-out sessions. Record per-run distributions and uncertainty.</li>
-<li><strong>P5.3</strong> Validate full agent task completion, tool-call format/arguments and reasoning behavior.</li>
-<li><strong>P5.4</strong> Measure actual GPU-hours and all attributable router/CPU/storage/network costs per completed workload.</li>
-<li><strong>P5.5</strong> Save immutable evidence with workload/trace hashes, source revisions, image and model identities.</li>
-<li><strong>P5.6</strong> Verify import failure leaves existing optimizer data usable.</li>
+<li><strong>P5.1</strong> <span class="who m">Manas</span> Separate cold-start, warmed-cache, tool-gap, memory-pressure, overload and helper-agent-burst experiments.</li>
+<li><strong>P5.2</strong> <span class="who m">Manas</span> Use at least three independent runs per key cell and held-out sessions. Record per-run distributions and uncertainty.</li>
+<li><strong>P5.3</strong> <span class="who u">Utkarsh</span> Validate full agent task completion, tool-call format/arguments and reasoning behavior.</li>
+<li><strong>P5.4</strong> <span class="who u">Utkarsh</span> Measure actual GPU-hours and all attributable router/CPU/storage/network costs per completed workload.</li>
+<li><strong>P5.5</strong> <span class="who m">Manas</span> Save immutable evidence with workload/trace hashes, source revisions, image and model identities.</li>
+<li><strong>P5.6</strong> <span class="who u">Utkarsh</span> Verify import failure leaves existing optimizer data usable.</li>
 </ul>
 
-<h3>Phase 6 &mdash; Opt-in beta in existing screens</h3>
+<h3>Phase 6 &mdash; Opt-in beta in existing screens <span class="lead">lead</span><span class="who u">Utkarsh</span></h3>
 <ul class="check plain">
-<li><strong>P6.1</strong> Optimizer: expose an agent workload only when an eligible measured profile exists.</li>
-<li><strong>P6.2</strong> Deploy dialog: show actual hardware, replica count, serving policy, supported cloud and frozen billing quote.</li>
-<li><strong>P6.3</strong> Deployments: retain current lifecycle and failure display; add active policy, ready/total replicas, observed cache reuse, latency/queue metrics.</li>
-<li><strong>P6.4</strong> Docs: show a working HTTP example with a stable session header, no-header fallback, helper-session guidance.</li>
-<li><strong>P6.5</strong> Usage: show actual wallet spend and request/token measurements. Label experiment-derived savings separately.</li>
-<li><strong>P6.6</strong> Canary to an internal organization, then one willing pilot customer; collect feedback before any general enablement.</li>
+<li><strong>P6.1</strong> <span class="who u">Utkarsh</span> Optimizer: expose an agent workload only when an eligible measured profile exists.</li>
+<li><strong>P6.2</strong> <span class="who u">Utkarsh</span> Deploy dialog: show actual hardware, replica count, serving policy, supported cloud and frozen billing quote.</li>
+<li><strong>P6.3</strong> <span class="who u">Utkarsh</span> Deployments: retain current lifecycle and failure display; add active policy, ready/total replicas, observed cache reuse, latency/queue metrics.</li>
+<li><strong>P6.4</strong> <span class="who u">Utkarsh</span> Docs: show a working HTTP example with a stable session header, no-header fallback, helper-session guidance.</li>
+<li><strong>P6.5</strong> <span class="who u">Utkarsh</span> Usage: show actual wallet spend and request/token measurements. Label experiment-derived savings separately.</li>
+<li><strong>P6.6</strong> <span class="who m">Manas</span><span class="who u">Utkarsh</span> Canary to an internal organization, then one willing pilot customer; collect feedback before any general enablement.</li>
 </ul>
 
-<h3>Phase 7 &mdash; Cache offload and capacity management (after pilot)</h3>
+<h3>Phase 7 &mdash; Cache offload and capacity management (after pilot) <span class="lead">lead</span><span class="who m">Manas</span></h3>
 <ul class="check plain">
-<li><strong>P7.1</strong> If cache eviction during tool gaps is a material cost, evaluate a compatible LMCache/upstream backend.</li>
-<li><strong>P7.2</strong> Add storage quotas, encryption/access boundaries, TTL/deletion and a tested cold-recompute fallback.</li>
-<li><strong>P7.3</strong> Introduce a logical serving pool and replica registry across VMs/pods.</li>
-<li><strong>P7.4</strong> Redesign meter membership with immutable replica identities, last-sample acknowledgements and idempotent removal before autoscaling.</li>
-<li><strong>P7.5</strong> Add queue-based autoscaling with min/max replicas, cooldowns, budget caps, actual model warm-up estimates.</li>
-<li><strong>P7.6</strong> Begin reactive scaling plus an explicit warm reserve.</li>
-<li><strong>P7.7</strong> Design router high availability and consistent affinity/membership.</li>
+<li><strong>P7.1</strong> <span class="who m">Manas</span> If cache eviction during tool gaps is a material cost, evaluate a compatible LMCache/upstream backend.</li>
+<li><strong>P7.2</strong> <span class="who u">Utkarsh</span> Add storage quotas, encryption/access boundaries, TTL/deletion and a tested cold-recompute fallback.</li>
+<li><strong>P7.3</strong> <span class="who m">Manas</span> Introduce a logical serving pool and replica registry across VMs/pods.</li>
+<li><strong>P7.4</strong> <span class="who u">Utkarsh</span> Redesign meter membership with immutable replica identities, last-sample acknowledgements and idempotent removal before autoscaling.</li>
+<li><strong>P7.5</strong> <span class="who m">Manas</span> Add queue-based autoscaling with min/max replicas, cooldowns, budget caps, actual model warm-up estimates.</li>
+<li><strong>P7.6</strong> <span class="who m">Manas</span> Begin reactive scaling plus an explicit warm reserve.</li>
+<li><strong>P7.7</strong> <span class="who m">Manas</span> Design router high availability and consistent affinity/membership.</li>
 </ul>
 
-<h3>Phase 8 &mdash; BYOC, additional engines/hardware and Hosted models</h3>
+<h3>Phase 8 &mdash; BYOC, additional engines/hardware and Hosted models <span class="lead">lead</span><span class="who u">Utkarsh</span><span class="who m">Manas</span></h3>
 <ul class="check plain">
-<li><strong>P8.1</strong> Add GCP BYOC using the same signed/validated policy, private networking and least-privilege access.</li>
-<li><strong>P8.2</strong> Extend to AWS after revalidating VM topology, runtime, storage, pricing and drain behavior.</li>
-<li><strong>P8.3</strong> Qualify SGLang separately. Preserve AMD/ATOM and TPU catalog paths.</li>
-<li><strong>P8.4</strong> Adapt Hosted models separately using their request journal, tenant-safe cache boundaries and GKE lifecycle.</li>
+<li><strong>P8.1</strong> <span class="who u">Utkarsh</span> Add GCP BYOC using the same signed/validated policy, private networking and least-privilege access.</li>
+<li><strong>P8.2</strong> <span class="who m">Manas</span> Extend to AWS after revalidating VM topology, runtime, storage, pricing and drain behavior.</li>
+<li><strong>P8.3</strong> <span class="who m">Manas</span> Qualify SGLang separately. Preserve AMD/ATOM and TPU catalog paths.</li>
+<li><strong>P8.4</strong> <span class="who u">Utkarsh</span> Adapt Hosted models separately using their request journal, tenant-safe cache boundaries and GKE lifecycle.</li>
 </ul>
 
 <h2>6. Suggested implementation boundaries</h2>
@@ -317,13 +336,13 @@
 <div class="scroll"><table>
 <thead><tr><th>PR</th><th>Contents</th><th>Merge requirement</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>Experiment manifest, session contract, explicit-off flag, policy types and offline tests</td><td>No cloud behavior change; legacy tests pass.</td></tr>
-<tr><td>2</td><td>Opt-in GCP startup wiring, pinned router artifact, two-replica readiness/drain</td><td>Real-socket tests and a bounded internal deployment test.</td></tr>
-<tr><td>3</td><td>Affinity, overload/deadline handling and failure semantics</td><td>Repeated turns, unhealthy replicas, cancellation and streaming verified.</td></tr>
-<tr><td>4</td><td>Telemetry adapters and billing reconciliation tests</td><td>No double debit; cache-token semantics documented for exact runtime.</td></tr>
-<tr><td>5</td><td>Layer 4 agent evidence/export and validated app import</td><td>Held-out results; existing catalog and planner parity preserved.</td></tr>
-<tr><td>6</td><td>Optimizer/deployment/Docs/Usage beta controls</td><td>End-to-end user flow, internal canary, rollback exercise.</td></tr>
-<tr><td>Later</td><td>Offload, multi-node pools/autoscaling, BYOC, AWS and hosted adoption</td><td>Separate measured justification and release gate for each.</td></tr>
+<tr><td>1</td><td><span class="who u">Utkarsh</span> Experiment manifest, session contract, explicit-off flag, policy types and offline tests</td><td>No cloud behavior change; legacy tests pass.</td></tr>
+<tr><td>2</td><td><span class="who m">Manas</span> Opt-in GCP startup wiring, pinned router artifact, two-replica readiness/drain</td><td>Real-socket tests and a bounded internal deployment test.</td></tr>
+<tr><td>3</td><td><span class="who m">Manas</span> Affinity, overload/deadline handling and failure semantics</td><td>Repeated turns, unhealthy replicas, cancellation and streaming verified.</td></tr>
+<tr><td>4</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span> Telemetry adapters and billing reconciliation tests</td><td>No double debit; cache-token semantics documented for exact runtime.</td></tr>
+<tr><td>5</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span> Layer 4 agent evidence/export and validated app import</td><td>Held-out results; existing catalog and planner parity preserved.</td></tr>
+<tr><td>6</td><td><span class="who u">Utkarsh</span> Optimizer/deployment/Docs/Usage beta controls</td><td>End-to-end user flow, internal canary, rollback exercise.</td></tr>
+<tr><td>Later</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span> Offload, multi-node pools/autoscaling, BYOC, AWS and hosted adoption</td><td>Separate measured justification and release gate for each.</td></tr>
 </tbody></table></div>
 <p>PRs 2&ndash;4 may overlap in implementation, but they do not constitute a customer-ready feature until the shared release gates pass. No automatic merge to main or production rollout is implied by this plan.</p>
 
@@ -355,7 +374,7 @@
 <li>Confirm dedicated GCP is the initial delivery target; shared hosted pools follow later.</li>
 <li>Validate the proposed Qwen BF16/RTX PRO 6000 pilot or choose the best-supported catalog alternative after Phase 0.</li>
 <li>Select the exact router adapter after testing; no commitment to Dynamo, llm-d, SGLang Router or a new distributed system before compatibility evidence.</li>
-<li>Set a maximum GPU budget/runtime for the pilot and name the runtime, platform, billing and validation owners.</li>
+<li>Set a maximum GPU budget/runtime for the pilot. Owners are named: runtime and validation <span class="who m">Manas</span>, platform and billing <span class="who u">Utkarsh</span>.</li>
 <li>Agree the evidence threshold for customer beta and the separate threshold for claiming the proposed 1.3&times; advantage.</li>
 </ol>
 <p><strong>Immediate next action:</strong> implement PR 1 and the Phase 0 compatibility checklist. Then provision the bounded two-replica pilot. Leave cache offload, autoscaling and a new top-level tab out of that first change.</p>
