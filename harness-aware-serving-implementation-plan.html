@@ -200,11 +200,11 @@
 <thead><tr><th>Phase</th><th>Lead</th><th>Manas</th><th>Utkarsh</th><th>Handoff</th></tr></thead>
 <tbody>
 <tr><td>0 &middot; Freeze &amp; verify</td><td><span class="who m">Manas</span></td><td>Recipe pin, artifact/engine check, router choice, metric spec</td><td>Replay fixture, cost cap and cleanup deadline</td><td>Frozen manifest unblocks Phase 2</td></tr>
-<tr><td>1 &middot; Contract</td><td><span class="who u">Utkarsh</span></td><td>Supported endpoints/fields, failure semantics</td><td>Flag, <code>servingPolicy</code>, session header, tenant namespacing</td><td>Runs in parallel with Phase 0; lands as PR 1</td></tr>
-<tr><td>2 &middot; Two-replica pilot</td><td><span class="who m">Manas</span></td><td>Startup wiring, router install, prefix cache, readiness, capacity search</td><td>Stop/drain and final meter sample</td><td>PR 2; needs P1.2 policy shape</td></tr>
-<tr><td>3 &middot; Routing</td><td><span class="who m">Manas</span></td><td>All of it</td><td>Meanwhile: Phase 4 billing work and Phase 6 screens behind the flag</td><td>PR 3</td></tr>
-<tr><td>4 &middot; Telemetry &amp; billing</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span></td><td>Request/cache metrics, counter semantics audit</td><td>Single billing authority, reconciliation tests, Convex aggregates, cost view</td><td>P4.3 result feeds P4.4/P4.5; PR 4</td></tr>
-<tr><td>5 &middot; Benchmark</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span></td><td>Experiment matrix, repeated runs, evidence store</td><td>Task-completion validation, cost per workload, import safety</td><td>PR 5</td></tr>
+<tr><td>1 &middot; Contract</td><td><span class="who u">Utkarsh</span></td><td>Supported endpoints/fields</td><td>Flag, <code>servingPolicy</code>, session header, tenant namespacing, failure semantics</td><td>Runs in parallel with Phase 0; lands as PR 1</td></tr>
+<tr><td>2 &middot; Two-replica pilot</td><td><span class="who m">Manas</span></td><td>Startup wiring, router install, prefix cache, capacity search</td><td>Readiness health checks, Stop/drain and final meter sample</td><td>PR 2; needs P1.2 policy shape</td></tr>
+<tr><td>3 &middot; Routing</td><td><span class="who m">Manas</span></td><td>Affinity, spillover, failover, streaming, cache keys</td><td>Request/queue bounds; meanwhile Phase 4 billing and Phase 6 screens behind the flag</td><td>PR 3</td></tr>
+<tr><td>4 &middot; Telemetry &amp; billing</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span></td><td>Cache-token metrics, counter semantics audit</td><td>Request-level latency metrics, single billing authority, reconciliation tests, Convex aggregates, cost view</td><td>P4.3 result feeds P4.4/P4.5; PR 4</td></tr>
+<tr><td>5 &middot; Benchmark</td><td><span class="who m">Manas</span><span class="who u">Utkarsh</span></td><td>Experiment matrix, repeated runs</td><td>Task-completion validation, cost per workload, evidence store, import safety</td><td>PR 5</td></tr>
 <tr><td>6 &middot; Beta UI</td><td><span class="who u">Utkarsh</span></td><td>Canary support</td><td>Optimizer, Deploy dialog, Deployments, Docs, Usage</td><td>PR 6; joint canary and rollback drill</td></tr>
 <tr><td>7 &middot; Offload &amp; scale</td><td><span class="who m">Manas</span></td><td>LMCache, pool/registry, autoscaling, router HA</td><td>Storage quotas/TTL, meter membership redesign</td><td>After pilot only</td></tr>
 <tr><td>8 &middot; BYOC, AWS, Hosted</td><td><span class="who u">Utkarsh</span><span class="who m">Manas</span></td><td>AWS, SGLang/AMD/TPU</td><td>GCP BYOC, Hosted adoption</td><td>Each item gated separately</td></tr>
@@ -227,7 +227,7 @@
 <li><strong>P1.3</strong> <span class="who u">Utkarsh</span> Document <code>X-Runara-Session-Id</code>: optional opaque bounded identifier, stable across one agent conversation; a separate ID for each helper conversation.</li>
 <li><strong>P1.4</strong> <span class="who u">Utkarsh</span> Namespace affinity by authenticated deployment/tenant and runtime identity. The header is a routing hint, never authorization.</li>
 <li><strong>P1.5</strong> <span class="who m">Manas</span> Define supported endpoints and fields: chat completions, model listing, tools/tool results, reasoning controls, JSON responses and streaming.</li>
-<li><strong>P1.6</strong> <span class="who m">Manas</span> Define behavior for invalid sessions, overload, request cancellation, engine failure and router restart.</li>
+<li><strong>P1.6</strong> <span class="who u">Utkarsh</span> Define behavior for invalid sessions, overload, request cancellation, engine failure and router restart.</li>
 </ul>
 
 <h3>Phase 2 &mdash; Provision an isolated two-replica pilot <span class="lead">lead</span><span class="who m">Manas</span></h3>
@@ -235,7 +235,7 @@
 <li><strong>P2.1</strong> <span class="who m">Manas</span> Extend the optimizer startup generator through an opt-in branch; preserve the default <code>least_conn</code> path.</li>
 <li><strong>P2.2</strong> <span class="who m">Manas</span> Install a pinned local routing service between the existing authenticated proxy and the replica ports.</li>
 <li><strong>P2.3</strong> <span class="who m">Manas</span> Enable native prefix caching only on the new verified recipe. Never silently alter the measured launch command of an existing catalog row.</li>
-<li><strong>P2.4</strong> <span class="who m">Manas</span> Health-check each engine and perform an actual model request before admitting it.</li>
+<li><strong>P2.4</strong> <span class="who u">Utkarsh</span> Health-check each engine and perform an actual model request before admitting it.</li>
 <li><strong>P2.5</strong> <span class="who m">Manas</span> Preserve bounded capacity search, startup deadline, cancellation and losing-resource cleanup.</li>
 <li><strong>P2.6</strong> <span class="who u">Utkarsh</span> Ensure Stop drains admissions and in-flight usage, takes the final meter sample, and tears down router, engines and VM.</li>
 </ul>
@@ -247,12 +247,12 @@
 <li><strong>P3.3</strong> <span class="who m">Manas</span> Exclude unhealthy/draining replicas. Allow a surviving replica to recompute the prompt after failure.</li>
 <li><strong>P3.4</strong> <span class="who m">Manas</span> Preserve immediate SSE delivery, tool-call deltas, reasoning content and cancellation.</li>
 <li><strong>P3.5</strong> <span class="who m">Manas</span> Keep cache compatibility keys tied to checkpoint, tokenizer/template, precision, engine/KV layout, adapter and relevant launch configuration.</li>
-<li><strong>P3.6</strong> <span class="who m">Manas</span> Bound request bodies, queues and diagnostic state.</li>
+<li><strong>P3.6</strong> <span class="who u">Utkarsh</span> Bound request bodies, queues and diagnostic state.</li>
 </ul>
 
 <h3>Phase 4 &mdash; Telemetry and billing correctness <span class="lead">lead</span><span class="who m">Manas</span><span class="who u">Utkarsh</span></h3>
 <ul class="check plain">
-<li><strong>P4.1</strong> <span class="who m">Manas</span> Add request-level queue time, TTFT, end-to-end latency, errors and output rate. Distinguish p95/p99 TTFT, p90 request-mean TPOT and p99 individual ITL.</li>
+<li><strong>P4.1</strong> <span class="who u">Utkarsh</span> Add request-level queue time, TTFT, end-to-end latency, errors and output rate. Distinguish p95/p99 TTFT, p90 request-mean TPOT and p99 individual ITL.</li>
 <li><strong>P4.2</strong> <span class="who m">Manas</span> Add engine-confirmed cached/uncached prompt-token observations, cache capacity/evictions where exposed, routing policy, replica health and spillover counts.</li>
 <li><strong>P4.3</strong> <span class="who m">Manas</span> Audit the exact engine version's counter semantics. Determine whether prompt counters include cached tokens.</li>
 <li><strong>P4.4</strong> <span class="who u">Utkarsh</span> Keep one billing authority: existing dedicated cumulative meter and ledger. Routing observations are analytics, not a second invoice.</li>
@@ -274,7 +274,7 @@
 <li><strong>P5.2</strong> <span class="who m">Manas</span> Use at least three independent runs per key cell and held-out sessions. Record per-run distributions and uncertainty.</li>
 <li><strong>P5.3</strong> <span class="who u">Utkarsh</span> Validate full agent task completion, tool-call format/arguments and reasoning behavior.</li>
 <li><strong>P5.4</strong> <span class="who u">Utkarsh</span> Measure actual GPU-hours and all attributable router/CPU/storage/network costs per completed workload.</li>
-<li><strong>P5.5</strong> <span class="who m">Manas</span> Save immutable evidence with workload/trace hashes, source revisions, image and model identities.</li>
+<li><strong>P5.5</strong> <span class="who u">Utkarsh</span> Save immutable evidence with workload/trace hashes, source revisions, image and model identities.</li>
 <li><strong>P5.6</strong> <span class="who u">Utkarsh</span> Verify import failure leaves existing optimizer data usable.</li>
 </ul>
 
